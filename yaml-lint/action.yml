@@ -12,7 +12,7 @@ runs:
       id: file-location
       shell: bash
       run: |
-        if [[ -f .yamllint2 ]]; then
+        if [[ -f .yamllint ]]; then
           echo "file-path=.yamllint" >> $GITHUB_OUTPUT
         else
           echo "file-path=${{ github.action_path }}/.yamllint" >> $GITHUB_OUTPUT
