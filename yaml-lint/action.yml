@@ -15,7 +15,7 @@ runs:
         if [[ -f .yamllint2 ]]; then
           echo "file-path=.yamllint" >> $GITHUB_OUTPUT
         else
-          echo "file-path=${{ github.action-path }}/.yamllint" >> $GITHUB_OUTPUT
+          echo "file-path=${{ github.action_path }}/.yamllint" >> $GITHUB_OUTPUT
         fi
 
     - name: Show .yamllint location
