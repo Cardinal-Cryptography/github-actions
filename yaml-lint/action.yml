@@ -1,0 +1,31 @@
+---
+name: GH Action YAML linter
+description: Lints YAML
+
+runs:
+  using: "composite"
+  steps:
+    - name: GIT | Checkout source code
+      uses: actions/checkout@v3
+
+    - name: Get .yamllint location
+      id: file-location
+      shell: bash
+      run: |
+        if [[ -f .yamllint ]]; then
+          echo "file-path=.yamllint" >> $GITHUB_OUTPUT
+        else
+          echo "file-path=${{ github.action_path }}/.yamllint" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Show .yamllint location
+      shell: bash
+      run: |
+        echo "Found .yamllint in ${{ steps.file-location.outputs.file-path }}"
+
+    - name: LINT | Execute yaml-lint
+      uses: ibiqlik/action-yamllint@v3.1.1
+      with:
+        strict: true
+        file_or_dir: .github
+        config_file: ${{ steps.file-location.outputs.file-path }}
