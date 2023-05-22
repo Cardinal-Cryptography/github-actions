@@ -1,0 +1,16 @@
+---
+name: GH Action YAML linter
+description: Lints YAML
+
+runs:
+  using: "composite"
+  steps:
+    - name: GIT | Checkout source code
+      uses: actions/checkout@v3
+
+    - name: LINT | Execute yaml-lint
+      uses: ibiqlik/action-yamllint@v3.1.1
+      with:
+        strict: true
+        file_or_dir: .github
+        config_file: .yamllint
