@@ -17,5 +17,4 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: LINT | Execute YAML linter
-        # yamllint disable-line rule:line-length
         uses: Cardinal-Cryptography/github-actions/yaml-lint@v1
