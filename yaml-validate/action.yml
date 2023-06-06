@@ -10,7 +10,7 @@ runs:
 
     - name: VALIDATE | Execute github-actions-validator
       env:
-        DOCKER_IMAGE: public.ecr.aws/p6e8q1z1/github-actions-validator:0.4.2
+        DOCKER_IMAGE: public.ecr.aws/p6e8q1z1/github-actions-validator:v0.4.3
       shell: bash
       run: |
         set +e
