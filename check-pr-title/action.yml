@@ -25,6 +25,10 @@ runs:
             Example: \"A0-1337: Add h4x0r l33t code\""
             exit 1
           fi
+          if echo "$PR_TITLE" | grep -Eq "^A0-0000.*$"; then
+            echo "A0-0000 ticket number cannot be used in the PR title"
+            exit 1
+          fi
         else
           echo "PR_TITLE is empty"
           exit 1
