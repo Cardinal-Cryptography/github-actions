@@ -49,6 +49,8 @@ runs:
 
         ${helper} create-deployment "${{ inputs.owner }}" "${{ inputs.repo }}" "${{ inputs.env }}" "${{ inputs.ref }}" > deployment-id.txt
 
+        cat deployment-id.txt
+
         deployment_id=$(cat deployment-id.txt | grep '^Created deployment: ' | cut -d: -f2 | sed -e 's/^[[:space:]]*//')
         if [[ -n "${deployment_id}" ]]; then
           echo "Got deployment id of ${deployment_id}"
