@@ -54,7 +54,7 @@ runs:
         cat deployment-id.txt
 
         deployment_id=$(cat deployment-id.txt)
-        if [[ -n "${deployment_id}" ]]; then
+        if [[ "${deployment_id}" =~ ^[0-9]{1,32}$ ]]; then
           echo "Got deployment id of ${deployment_id}"
         else
           echo "!!! Error creating deployment"
