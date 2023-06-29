@@ -22,7 +22,7 @@ print_syntax() {
   echo "  create-deployment-status <owner> <repo> <deployment-id> <status>"
   echo "    Creates deployment status"
   echo ""
-  echo "  delete-environment <feature-net-name>"
+  echo "  delete-environment <owner> <repo> <env>"
   echo "    Deletes environment and all deployments and statuses related to it"
   echo ""
 }
@@ -96,12 +96,19 @@ make_github_api_call() {
       -H "X-GitHub-Api-Version: 2022-11-28" \
       https://api.github.com/repos/${2}/${3}/${4} > "${6}"
   fi
+  if [[ "${1}" == "DELETE" ]]; then
+    curl -L \
+      -X "${1}" \
+      -H "Accept: application/vnd.github+json" \
+      -H "Authorization: Bearer ${GITHUB_TOKEN}"\
+      -H "X-GitHub-Api-Version: 2022-11-28" \
+      https://api.github.com/repos/${2}/${3}/${4} > "${6}"
+  fi
 }
 
 
 if [[ "${CMD}" == "create-deployment" ]]; then
   check_env_vars;
-
   arg_owner=${2:-}
   arg_repo=${3:-}
   arg_env=${4:-}
@@ -155,6 +162,25 @@ fi
 
 if [[ "${CMD}" == "delete-environment" ]]; then
   check_env_vars;
+  arg_owner=${2:-}
+  arg_repo=${3:-}
+  arg_env=${4:-}
+  check_owner_and_repo "${arg_owner}" "${arg_repo}";
+  check_env "${arg_env}";
+
+  make_github_api_call "GET" "${arg_owner}" "${arg_repo}" "deployments?environment=${arg_env}" "" "tmp-output.txt"
+
+  for deployment_id in $(cat tmp-output.txt | jq -r '.[].id'); do
+    make_github_api_call "GET" "${arg_owner}" "${arg_repo}" "deployments/${deployment_id}/statuses" "" "tmp-output2.txt"
+
+    last_state=$(cat tmp-output2.txt | jq -r '.[0].state')
+    if [[ "${last_state}" != "inactive" ]]; then
+      make_github_api_call "POST" "${arg_owner}" "${arg_repo}" "deployments/${deployment_id}/statuses" '{"state":"inactive"}' "tmp-output3.txt"
+    fi
+
+    make_github_api_call "DELETE" "${arg_owner}" "${arg_repo}" "deployments/${deployment_id}" "" "tmp-output4.txt"
+  done
+
   exit 0;
 fi
 
