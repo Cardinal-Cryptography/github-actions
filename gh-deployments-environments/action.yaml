@@ -37,7 +37,7 @@ runs:
     - name: Run helper.sh script
       shell: bash
       run: |
-        helper=${{ env.GITHUB_ACTION_PATH }}/helper.sh
+        helper=${{ github.action_path }}/helper.sh
         chmod +x ${helper}
         ${helper}
 
