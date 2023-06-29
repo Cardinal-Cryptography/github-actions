@@ -61,6 +61,8 @@ runs:
       id: create-deployment-status
       if: ${{ inputs.action == 'create-deployment-status' }}
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         ${{ github.action_path }}/helper.sh create-deployment-status "${{ inputs.owner }}" "${{ inputs.repo }}" "${{ inputs.deployment-id }}" "${{ inputs.status }}"
 
@@ -68,6 +70,8 @@ runs:
       id: delete-environment
       if: ${{ inputs.action == 'delete-environment' }}
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         exit 0;
         if [[ "${{ inputs.env }}" == "devnet" || "${{ inputs.env }}" == "testnet" || "${{ inputs.env }}" == "mainnet" ]]; then
