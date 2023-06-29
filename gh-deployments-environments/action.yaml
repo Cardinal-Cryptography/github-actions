@@ -28,13 +28,13 @@ inputs:
     description: Status of the deployment, one of error, failure, inactive, in_progress, queued, pending, success
     required: false
 outputs:
-  deployment-id: ${{ steps.create-deployment.outputs.deployment-id }}
+  deployment-id: ${{ jobs.create-deployment.outputs.deployment-id }}
 runs:
   using: composite
   steps:
     - name: Create deployment
       id: create-deployment
-      if: ${{ action == 'create-deployment' }}
+      if: ${{ inputs.action == 'create-deployment' }}
       shell: bash
       run: |
         if [[ -z "${{ inputs.ref }}" ]]; then
@@ -69,7 +69,7 @@ runs:
 
     - name: Create deployment status
       id: create-deployment-status
-      if: ${{ action == 'create-deployment-status' }}
+      if: ${{ inputs.action == 'create-deployment-status' }}
       shell: bash
       run: |
         if [[ ! "${{ inputs.deployment-id }}" =~ ^[0-9]{1,16}$ ]]; then
