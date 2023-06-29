@@ -24,7 +24,7 @@ inputs:
   deployment-id:
     description: Deployment ID
     required: false
-  deployment-status:
+  status:
     description: Status of the deployment, one of error, failure, inactive, in_progress, queued, pending, success
     required: false
 outputs:
@@ -67,7 +67,7 @@ runs:
           echo "!!! Error creating deployment"
           exit 1
         fi
-        echo "deployment-id=${deployment-id}" >> $GITHUB_OUTPUT
+        echo "deployment-id=${deployment_id}" >> $GITHUB_OUTPUT
 
     - name: Create deployment status
       id: create-deployment-status
