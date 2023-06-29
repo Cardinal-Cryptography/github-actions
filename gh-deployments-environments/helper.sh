@@ -121,7 +121,7 @@ if [[ "${CMD}" == "create-deployment" ]]; then
     exit 1;
   fi
 
-  # Create deployment, which automatically create an environment if it does not exist
+  # Create deployment, which will automatically create an environment if it does not exist
   make_github_api_call "POST" "${arg_owner}" "${arg_repo}" "deployments" "{\"ref\":\"${arg_ref}\",\"environment\":\"${arg_env}\"}" "tmp-output.txt"
 
   deployment_id=$(cat tmp-output.txt | jq '.id')
@@ -156,7 +156,7 @@ if [[ "${CMD}" == "create-deployment-status" ]]; then
     exit 0
   fi
 
-  # If the current state of deployment is different then $arg_status, then update it
+  # If the current state of deployment is different than $arg_status, update it
   make_github_api_call "POST" "${arg_owner}" "${arg_repo}" "deployments/${arg_deployment_id}/statuses" "{\"state\":\"${arg_status}\"}" "tmp-output2.txt"
 
   exit 0;
@@ -175,8 +175,8 @@ if [[ "${CMD}" == "delete-environment" ]]; then
   # Get all deployment for a specified environment
   make_github_api_call "GET" "${arg_owner}" "${arg_repo}" "deployments?environment=${arg_env}" "" "tmp-output.txt"
 
-  # Loop through all the deployment, get their statuses
-  # and if any status is not 'inactive', change it.
+  # Loop through all the deployments, get their statuses
+  # and if any status is not 'inactive', change that.
   # Once deployment is 'inactive', remove it.
   for deployment_id in $(cat tmp-output.txt | jq -r '.[].id'); do
     make_github_api_call "GET" "${arg_owner}" "${arg_repo}" "deployments/${deployment_id}/statuses" "" "tmp-output2.txt"
