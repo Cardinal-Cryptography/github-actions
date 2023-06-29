@@ -28,7 +28,9 @@ inputs:
     description: Status of the deployment, one of error, failure, inactive, in_progress, queued, pending, success
     required: false
 outputs:
-  deployment-id: ${{ jobs.create-deployment.outputs.deployment-id }}
+  deployment-id: 
+    description: ID of created deployment
+    value: ${{ steps.create-deployment.outputs.deployment-id }}
 runs:
   using: composite
   steps:
