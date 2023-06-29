@@ -37,7 +37,6 @@ check_env_vars() {
 }
 
 check_owner_and_repo() {
-  echo "${1}"
   if [[ ! "${1}" =~ ^[a-zA-Z0-9_\-]{1,50}$ ]]; then
     echo "!!! owner is invalid"
     exit 1
@@ -90,7 +89,7 @@ if [[ "${CMD}" == "create-deployment" ]]; then
   check_owner_and_repo "${arg_owner}" "${arg_repo}";
   check_env "${arg_env}";
   check_ref "${arg_ref}";
-  if [[ -n "${arg_file}" ]]; then
+  if [[ -z "${arg_file}" ]]; then
     echo "!!! output-file-for-id is missing";
     exit 1;
   fi
