@@ -44,6 +44,8 @@ runs:
       id: create-deployment
       if: ${{ inputs.action == 'create-deployment' }}
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         helper=${{ github.action_path }}/helper.sh
 
