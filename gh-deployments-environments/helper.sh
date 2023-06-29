@@ -16,7 +16,7 @@ print_syntax() {
   echo "  help"
   echo "    Prints this screen"
   echo ""
-  echo "  create-deployment <owner> <repo> <env> <ref>"
+  echo "  create-deployment <owner> <repo> <env> <ref> <output-file-for-id>"
   echo "    Creates new deployment"
   echo ""
   echo "  create-deployment-status <feature-net-name>"
@@ -86,15 +86,20 @@ if [[ "${CMD}" == "create-deployment" ]]; then
   arg_repo=${3:-}
   arg_env=${4:-}
   arg_ref=${5:-}
+  arg_file=${6:-}
   check_owner_and_repo "${arg_owner}" "${arg_repo}";
   check_env "${arg_env}";
   check_ref "${arg_ref}";
+  if [[ -n "${arg_file}" ]]; then
+    echo "!!! output-file-for-id is missing";
+    exit 1;
+  fi
 
   make_github_api_call POST "${arg_owner}" "${arg_repo}" "{\"ref\":\"${arg_ref}\",\"environment\":\"${arg_env}\"}" "tmp-output.txt"
 
   deployment_id=$(cat tmp-output.txt | jq '.id')
   if [[ -n "${deployment_id}" ]]; then
-    echo "Created deployment: ${deployment_id}"
+    echo "${deployment_id}" > "${arg_file}"
   else
     echo "!!! Error creating deployment"
     exit 1

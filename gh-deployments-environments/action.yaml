@@ -47,7 +47,7 @@ runs:
       run: |
         helper=${{ github.action_path }}/helper.sh
 
-        ${helper} create-deployment "${{ inputs.owner }}" "${{ inputs.repo }}" "${{ inputs.env }}" "${{ inputs.ref }}" > deployment-id.txt
+        ${helper} create-deployment "${{ inputs.owner }}" "${{ inputs.repo }}" "${{ inputs.env }}" "${{ inputs.ref }}" "deployment-id.txt"
 
         cat deployment-id.txt
 
