@@ -31,7 +31,7 @@ print_syntax() {
 check_env_vars() {
 	if [[ -z "${GITHUB_TOKEN}" ]]; then
 		echo "!!! GITHUB_TOKEN environment variable is not set";
-		print_syntax()
+		print_syntax;
 		exit 1;
 	fi
 }
@@ -113,7 +113,7 @@ if [[ "${CMD}" == "delete-environment" ]]; then
 fi
 
 
-print_syntax()
+print_syntax;
 if [[ "${CMD}" != "" ]]; then
   exit 1;
 fi
