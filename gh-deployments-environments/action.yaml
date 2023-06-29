@@ -34,6 +34,13 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Run helper.sh script
+      shell: bash
+      run: |
+        helper=${{ env.GITHUB_ACTION_PATH }}/helper.sh
+        chmod +x ${helper}
+        ${helper}
+
     - name: Create deployment
       id: create-deployment
       if: ${{ inputs.action == 'create-deployment' }}
