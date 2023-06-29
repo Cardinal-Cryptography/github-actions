@@ -4,7 +4,7 @@ description: |
   Creates, updates and deletes GitHub Deployments and Environments
 inputs:
   action:
-    description: One of 'create-deployment', 'create-deployment-status'
+    description: One of create-deployment, create-deployment-status or delete-environment
     required: true
   env:
     description: Environment name
