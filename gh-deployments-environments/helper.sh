@@ -73,8 +73,6 @@ make_github_api_call() {
     -H "X-GitHub-Api-Version: 2022-11-28" \
     https://api.github.com/repos/${2}/${3}/deployments \
     -d "${4}" > "${5}"
-
-  cat ${5}
 }
 
 

@@ -53,7 +53,7 @@ runs:
 
         cat deployment-id.txt
 
-        deployment_id=$(cat deployment-id.txt | grep '^Created deployment: ' | cut -d: -f2 | sed -e 's/^[[:space:]]*//')
+        deployment_id=$(cat deployment-id.txt)
         if [[ -n "${deployment_id}" ]]; then
           echo "Got deployment id of ${deployment_id}"
         else
