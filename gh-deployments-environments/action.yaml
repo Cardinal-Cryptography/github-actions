@@ -51,8 +51,6 @@ runs:
 
         ${helper} create-deployment "${{ inputs.owner }}" "${{ inputs.repo }}" "${{ inputs.env }}" "${{ inputs.ref }}" "deployment-id.txt"
 
-        cat deployment-id.txt
-
         deployment_id=$(cat deployment-id.txt)
         if [[ "${deployment_id}" =~ ^[0-9]{1,32}$ ]]; then
           echo "Got deployment id of ${deployment_id}"

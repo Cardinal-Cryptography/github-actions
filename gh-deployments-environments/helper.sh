@@ -19,7 +19,7 @@ print_syntax() {
   echo "  create-deployment <owner> <repo> <env> <ref> <output-file-for-id>"
   echo "    Creates new deployment"
   echo ""
-  echo "  create-deployment-status <feature-net-name>"
+  echo "  create-deployment-status <owner> <repo> <deployment-id> <status>"
   echo "    Creates deployment status"
   echo ""
   echo "  delete-environment <feature-net-name>"
@@ -65,14 +65,37 @@ check_ref() {
   fi
 }
 
+check_deployment_id() {
+  if [[ ! "${1}" =~ ^[0-9]{1,32}$ ]]; then
+    echo "!!! deployment-id is invalid"
+    exit 1
+  fi
+}
+
+check_status() {
+  if [[ ! "${1}" =~ ^[a-z_\-]{1,32}$ ]]; then
+    echo "!!! status is invalid"
+    exit 1
+  fi
+}
+
 make_github_api_call() {
-  curl -L \
-    -X "${1}" \
-    -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GITHUB_TOKEN}"\
-    -H "X-GitHub-Api-Version: 2022-11-28" \
-    https://api.github.com/repos/${2}/${3}/deployments \
-    -d "${4}" > "${5}"
+  if [[ "${1}" == "POST" ]]; then
+    curl -L \
+      -X "${1}" \
+      -H "Accept: application/vnd.github+json" \
+      -H "Authorization: Bearer ${GITHUB_TOKEN}"\
+      -H "X-GitHub-Api-Version: 2022-11-28" \
+      https://api.github.com/repos/${2}/${3}/${4} \
+      -d "${5}" > "${6}"
+  fi
+  if [[ "${1}" == "GET" ]]; then
+    curl -L \
+      -H "Accept: application/vnd.github+json" \
+      -H "Authorization: Bearer ${GITHUB_TOKEN}"\
+      -H "X-GitHub-Api-Version: 2022-11-28" \
+      https://api.github.com/repos/${2}/${3}/${4} > "${6}"
+  fi
 }
 
 
@@ -92,7 +115,7 @@ if [[ "${CMD}" == "create-deployment" ]]; then
     exit 1;
   fi
 
-  make_github_api_call POST "${arg_owner}" "${arg_repo}" "{\"ref\":\"${arg_ref}\",\"environment\":\"${arg_env}\"}" "tmp-output.txt"
+  make_github_api_call "POST" "${arg_owner}" "${arg_repo}" "deployments" "{\"ref\":\"${arg_ref}\",\"environment\":\"${arg_env}\"}" "tmp-output.txt"
 
   deployment_id=$(cat tmp-output.txt | jq '.id')
   if [[ -n "${deployment_id}" ]]; then
@@ -105,10 +128,30 @@ if [[ "${CMD}" == "create-deployment" ]]; then
   exit 0;
 fi
 
+
 if [[ "${CMD}" == "create-deployment-status" ]]; then
   check_env_vars;
+  arg_owner=${2:-}
+  arg_repo=${3:-}
+  arg_deployment_id=${4:-}
+  arg_status=${5:-}
+  check_owner_and_repo "${arg_owner}" "${arg_repo}";
+  check_deployment_id "${arg_deployment_id}";
+  check_status "${arg_status}";
+
+  make_github_api_call "GET" "${arg_owner}" "${arg_repo}" "deployments/${arg_deployment_id}/statuses" "" "tmp-output.txt"
+
+  last_state=$(cat tmp-output.txt | jq -r '.[0].state')
+  if [[ "${last_state}" == "${arg_status}" ]]; then
+    echo "Deployment ${arg_deployment_id} already has status of '${arg_status}'"
+    exit 0
+  fi
+
+  make_github_api_call "POST" "${arg_owner}" "${arg_repo}" "deployments/${arg_deployment_id}/statuses" "{\"state\":\"${arg_status}\"}" "tmp-output2.txt"
+
   exit 0;
 fi
+
 
 if [[ "${CMD}" == "delete-environment" ]]; then
   check_env_vars;
