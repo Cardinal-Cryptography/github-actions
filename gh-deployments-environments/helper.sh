@@ -5,7 +5,6 @@ set -e
 CMD=${1:-};
 
 
-
 print_syntax() {
   echo "helper.sh <command> [args...]"
   echo ""
@@ -122,6 +121,7 @@ if [[ "${CMD}" == "create-deployment" ]]; then
     exit 1;
   fi
 
+  # Create deployment, which automatically create an environment if it does not exist
   make_github_api_call "POST" "${arg_owner}" "${arg_repo}" "deployments" "{\"ref\":\"${arg_ref}\",\"environment\":\"${arg_env}\"}" "tmp-output.txt"
 
   deployment_id=$(cat tmp-output.txt | jq '.id')
@@ -141,25 +141,29 @@ if [[ "${CMD}" == "create-deployment-status" ]]; then
   arg_owner=${2:-}
   arg_repo=${3:-}
   arg_deployment_id=${4:-}
-  arg_status=${5:-}
+  arg_status=${5:-} # Same as 'state'
   check_owner_and_repo "${arg_owner}" "${arg_repo}";
   check_deployment_id "${arg_deployment_id}";
   check_status "${arg_status}";
 
+  # Get deployment last statuses (we only need the first one)
   make_github_api_call "GET" "${arg_owner}" "${arg_repo}" "deployments/${arg_deployment_id}/statuses" "" "tmp-output.txt"
 
+  # Compare current state of deployment with desired status
   last_state=$(cat tmp-output.txt | jq -r '.[0].state')
   if [[ "${last_state}" == "${arg_status}" ]]; then
     echo "Deployment ${arg_deployment_id} already has status of '${arg_status}'"
     exit 0
   fi
 
+  # If the current state of deployment is different then $arg_status, then update it
   make_github_api_call "POST" "${arg_owner}" "${arg_repo}" "deployments/${arg_deployment_id}/statuses" "{\"state\":\"${arg_status}\"}" "tmp-output2.txt"
 
   exit 0;
 fi
 
 
+# To remove the environment, we have to remove all its deployments
 if [[ "${CMD}" == "delete-environment" ]]; then
   check_env_vars;
   arg_owner=${2:-}
@@ -168,8 +172,12 @@ if [[ "${CMD}" == "delete-environment" ]]; then
   check_owner_and_repo "${arg_owner}" "${arg_repo}";
   check_env "${arg_env}";
 
+  # Get all deployment for a specified environment
   make_github_api_call "GET" "${arg_owner}" "${arg_repo}" "deployments?environment=${arg_env}" "" "tmp-output.txt"
 
+  # Loop through all the deployment, get their statuses
+  # and if any status is not 'inactive', change it.
+  # Once deployment is 'inactive', remove it.
   for deployment_id in $(cat tmp-output.txt | jq -r '.[].id'); do
     make_github_api_call "GET" "${arg_owner}" "${arg_repo}" "deployments/${deployment_id}/statuses" "" "tmp-output2.txt"
 
