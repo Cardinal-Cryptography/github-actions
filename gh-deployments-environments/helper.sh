@@ -37,18 +37,19 @@ check_env_vars() {
 }
 
 check_owner_and_repo() {
-  if [[ ! "${1}" =~ ^[0-9a-zA-Z\-\_]{1,50}$ ]]; then
+  echo "${1}"
+  if [[ ! "${1}" =~ ^[a-zA-Z0-9_\-]{1,50}$ ]]; then
     echo "!!! owner is invalid"
     exit 1
   fi
-  if [[ ! "${2}" =~ ^[0-9a-zA-Z\-\_]{1,50}$ ]]; then
+  if [[ ! "${2}" =~ ^[0-9a-zA-Z_\-]{1,50}$ ]]; then
     echo "!!! repo is invalid"
     exit 1
   fi
 }
 
 check_env() {
-  if [[ ! "${1}" =~ ^[0-9a-zA-Z\-\_]{1,100}$ ]]; then
+  if [[ ! "${1}" =~ ^[0-9a-zA-Z_\-]{1,100}$ ]]; then
     echo "!!! env is invalid"
     exit 1
   fi
@@ -59,7 +60,7 @@ check_env() {
 }
 
 check_ref() {
-  if [[ ! "${1}" =~ ^[0-9a-zA-Z\-\_\.:]{1,100}$ ]]; then
+  if [[ ! "${1}" =~ ^[0-9a-zA-Z_.:\-]{1,100}$ ]]; then
     echo "!!! ref is invalid"
     exit 1
   fi
@@ -93,7 +94,7 @@ if [[ "${CMD}" == "create-deployment" ]]; then
 
   deployment_id=$(cat tmp-output.txt | jq '.id')
   if [[ -n "${deployment_id}" ]]; then
-    echo "${deployment_id}"
+    echo "Created deployment: ${deployment_id}"
   else
     echo "!!! Error creating deployment"
     exit 1
