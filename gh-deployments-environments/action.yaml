@@ -74,4 +74,3 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         ${{ github.action_path }}/helper.sh delete-environment "${{ inputs.owner }}" "${{ inputs.repo }}" "${{ inputs.env }}"
- 
