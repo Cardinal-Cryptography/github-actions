@@ -1,38 +1,41 @@
 #!/usr/bin/env bash
 
-set -e
+set -eu
 
 CMD=${1:-};
 
 
 print_syntax() {
-  echo "helper.sh <command> [args...]"
-  echo ""
-  echo "Required environment variables:"
-  echo "  GITHUB_TOKEN  GitHub token used when calling API"
-  echo ""
-  echo "Available commands:"
-  echo "  help"
-  echo "    Prints this screen"
-  echo ""
-  echo "  create-deployment <owner> <repo> <env> <ref> <output-file-for-id>"
-  echo "    Creates new deployment"
-  echo ""
-  echo "  create-deployment-status <owner> <repo> <deployment-id> <status>"
-  echo "    Creates deployment status"
-  echo ""
-  echo "  delete-environment <owner> <repo> <env>"
-  echo "    Deletes environment and all deployments and statuses related to it"
-  echo ""
+  cat << EOF
+Usage:
+  $0 <command> [args...]
+
+Required environment variables:
+  GITHUB_TOKEN  GitHub token used when calling API
+
+Available commands:
+  help
+    Prints this screen
+
+  create-deployment <owner> <repo> <env> <ref> <output-file-for-id>
+    Creates new deployment
+
+  create-deployment-status <owner> <repo> <deployment-id> <status>
+    Creates deployment status
+
+  delete-environment <owner> <repo> <env>
+    Deletes environment and all deployments and statuses related to it
+
+EOF
 }
 
 
 check_env_vars() {
-	if [[ -z "${GITHUB_TOKEN}" ]]; then
-		echo "!!! GITHUB_TOKEN environment variable is not set";
-		print_syntax;
-		exit 1;
-	fi
+  if [[ -z "${GITHUB_TOKEN}" ]]; then
+    echo "!!! GITHUB_TOKEN environment variable is not set";
+    print_syntax;
+    exit 1;
+  fi
 }
 
 check_owner_and_repo() {
