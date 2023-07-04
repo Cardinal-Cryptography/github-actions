@@ -1,0 +1,76 @@
+---
+name: GH Deployments and Environments
+description: |
+  Creates, updates and deletes GitHub Deployments and Environments
+inputs:
+  action:
+    description: One of create-deployment, create-deployment-status or delete-environment
+    required: true
+  env:
+    description: Environment name
+    required: false
+  ref:
+    description: Ref for deployment
+    required: false
+  token:
+    description: GitHub token
+    required: true
+  owner:
+    description: Owner
+    required: true
+  repo:
+    description: Repo
+    required: true
+  deployment-id:
+    description: Deployment ID
+    required: false
+  status:
+    description: Status of the deployment, one of error, failure, inactive, in_progress, queued, pending, success
+    required: false
+outputs:
+  deployment-id: 
+    description: ID of created deployment
+    value: ${{ steps.create-deployment.outputs.deployment-id }}
+runs:
+  using: composite
+  steps:
+    - name: Make helper.sh executable
+      shell: bash
+      run: |
+        chmod +x ${{ github.action_path }}/helper.sh
+
+    - name: Create deployment
+      id: create-deployment
+      if: ${{ inputs.action == 'create-deployment' }}
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: |
+        ${{ github.action_path }}/helper.sh create-deployment "${{ inputs.owner }}" "${{ inputs.repo }}" "${{ inputs.env }}" "${{ inputs.ref }}" "deployment-id.txt"
+
+        deployment_id=$(cat deployment-id.txt)
+        if [[ "${deployment_id}" =~ ^[0-9]{1,32}$ ]]; then
+          echo "Got deployment id of ${deployment_id}"
+        else
+          echo "!!! Error creating deployment"
+          exit 1
+        fi
+        echo "deployment-id=${deployment_id}" >> $GITHUB_OUTPUT
+
+    - name: Create deployment status
+      id: create-deployment-status
+      if: ${{ inputs.action == 'create-deployment-status' }}
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: |
+        ${{ github.action_path }}/helper.sh create-deployment-status "${{ inputs.owner }}" "${{ inputs.repo }}" "${{ inputs.deployment-id }}" "${{ inputs.status }}"
+
+    - name: Delete environment
+      id: delete-environment
+      if: ${{ inputs.action == 'delete-environment' }}
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: |
+        ${{ github.action_path }}/helper.sh delete-environment "${{ inputs.owner }}" "${{ inputs.repo }}" "${{ inputs.env }}"
