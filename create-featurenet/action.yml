@@ -140,7 +140,7 @@ runs:
       if: ${{ inputs.featurenet-aleph-node-image == 'testnet' ||
         inputs.featurenet-aleph-node-image == 'mainnet' }}
       id: get-node-commit-sha
-      uses: Cardinal-Cryptography/github-actions/get-node-system-version@v1
+      uses: Cardinal-Cryptography/github-actions/get-node-system-version@A0-3204-add-featurenet-actions-from-aleph-node
       with:
         env: ${{ inputs.featurenet-aleph-node-image }}
 
