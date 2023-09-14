@@ -83,28 +83,37 @@ check_status() {
 
 make_github_api_call() {
   if [[ "${1}" == "POST" ]]; then
+    uri="${2}"/"${3}"/"${4}"
+    echo "Making ${1} call to ${uri} ..."
     curl -L \
       -X "${1}" \
       -H "Accept: application/vnd.github+json" \
       -H "Authorization: Bearer ${GITHUB_TOKEN}"\
       -H "X-GitHub-Api-Version: 2022-11-28" \
-      https://api.github.com/repos/"${2}"/"${3}"/"${4}" \
+      https://api.github.com/repos/"${uri}" \
       -d "${5}" > "${6}"
   fi
   if [[ "${1}" == "GET" ]]; then
+    uri="${2}"/"${3}"/"${4}"
+    echo "Making ${1} call to ${uri} ..."
     curl -L \
       -H "Accept: application/vnd.github+json" \
       -H "Authorization: Bearer ${GITHUB_TOKEN}"\
       -H "X-GitHub-Api-Version: 2022-11-28" \
-      https://api.github.com/repos/"${2}"/"${3}"/"${4}" > "${6}"
+      https://api.github.com/repos/"${uri}" > "${6}"
   fi
   if [[ "${1}" == "DELETE" ]]; then
-    curl -L \
+    uri="${2}"/"${3}"/"${4}"
+    echo "Making ${1} call to ${uri} ..."
+    curl -i -L \
       -X "${1}" \
       -H "Accept: application/vnd.github+json" \
       -H "Authorization: Bearer ${GITHUB_TOKEN}"\
       -H "X-GitHub-Api-Version: 2022-11-28" \
-      https://api.github.com/repos/"${2}"/"${3}"/"${4}" > "${6}"
+      https://api.github.com/repos/"${uri}" > "${6}"
+
+    echo "API call response:"
+    cat "${6}"
   fi
 }
 
@@ -191,6 +200,9 @@ if [[ "${CMD}" == "delete-environment" ]]; then
 
     make_github_api_call "DELETE" "${arg_owner}" "${arg_repo}" "deployments/${deployment_id}" "" "tmp-output4.txt"
   done
+
+  # Delete the environment
+  make_github_api_call "DELETE" "${arg_owner}" "${arg_repo}" "environments/${arg_env}" "" "tmp-output5.txt"
 
   exit 0;
 fi
