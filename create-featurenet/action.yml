@@ -183,8 +183,8 @@ runs:
       shell: bash
       # yamllint disable rule:line-length
       run: |
-        cd "${{ github.workspace }}/aleph-node-compatibility"
-        ./Compatibility.sh "${aleph_node_dir}" | grep "__output:tag:" | cut -d: -f3 > tmp-output.txt
+        cd "${{ inputs.repo-featurenet-template-name }}"
+        ./Compatibility.sh "${{ github.workspace }}/aleph-node-compatibility" | grep "__output:tag:" | cut -d: -f3 > tmp-output.txt
         featurenet_template_tag=$(cat tmp-output.txt)
         if [[ -z "${featurenet_template_tag}" ]]; then
           echo "!!! Error in getting compatible featurenet template tag"
