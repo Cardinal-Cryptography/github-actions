@@ -135,8 +135,7 @@ runs:
         env: ${{ inputs.featurenet-aleph-node-image }}
 
     - name: Checkout latest aleph-node repo to get featurenets tag
-      if: ${{ inputs.featurenet-aleph-node-image == 'testnet' ||
-        inputs.featurenet-aleph-node-image == 'mainnet' }}
+      if: ${{ inputs.featurenet-aleph-node-image != '' }}
       uses: actions/checkout@v3
       with:
         repository: Cardinal-Cryptography/aleph-node
