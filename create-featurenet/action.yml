@@ -144,9 +144,6 @@ runs:
         ref: main
 
     - name: Checkout aleph-node commit repo to get featurenet template tag
-      if: ${{ inputs.featurenet-aleph-node-image != 'testnet' &&
-        inputs.featurenet-aleph-node-image != 'mainnet' && 
-        inputs.featurenet-aleph-node-image != '' }}
       shell: bash
       run: |
         cd aleph-node-compatibility
