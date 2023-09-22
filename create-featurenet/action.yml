@@ -135,7 +135,6 @@ runs:
         env: ${{ inputs.featurenet-aleph-node-image }}
 
     - name: Checkout latest aleph-node repo to get featurenets tag
-      if: ${{ inputs.featurenet-aleph-node-image != '' }}
       uses: actions/checkout@v3
       with:
         repository: Cardinal-Cryptography/aleph-node
@@ -144,22 +143,23 @@ runs:
         fetch-depth: 0
         ref: main
 
-    - name: Checkout aleph-node repo on testnet/mainnet commit
-      if: ${{ inputs.featurenet-aleph-node-image == 'testnet' ||
-        inputs.featurenet-aleph-node-image == 'mainnet' }}
-      shell: bash
-      run: |
-        cd aleph-node-compatibility
-        git checkout "${{ steps.get-node-commit-sha.outputs.sha }}"
-
-    - name: Checkout aleph-node repo on input commit
+    - name: Checkout aleph-node commit repo to get featurenet template tag
       if: ${{ inputs.featurenet-aleph-node-image != 'testnet' &&
         inputs.featurenet-aleph-node-image != 'mainnet' && 
         inputs.featurenet-aleph-node-image != '' }}
       shell: bash
       run: |
         cd aleph-node-compatibility
-        git checkout "${{ inputs.featurenet-aleph-node-image }}"
+        if [[ "${{ inputs.featurenet-aleph-node-image }}" != "" ]]; then
+          if [[ "${{ inputs.featurenet-aleph-node-image }}" == "testnet" \
+            || "${{ inputs.featurenet-aleph-node-image }}" == "mainnet" ]]; then
+            git checkout "${{ steps.get-node-commit-sha.outputs.sha }}"
+          else
+            git checkout "${{ inputs.featurenet-aleph-node-image }}"
+          fi
+        else
+          git checkout "${{ steps.get-ref-properties.outputs.sha }}"
+        fi
 
     - name: Checkout featurenets repo
       uses: actions/checkout@v3
@@ -183,13 +183,7 @@ runs:
       shell: bash
       # yamllint disable rule:line-length
       run: |
-        if [[ "${{ inputs.featurenet-aleph-node-image }}" != '' ]]; then
-          aleph_node_dir=${{ github.workspace }}/aleph-node-compatibility
-        else
-          aleph_node_dir=${{ github.workspace }}
-        fi
-
-        cd "${{ inputs.repo-featurenet-template-name }}"
+        cd "${{ github.workspace }}/aleph-node-compatibility"
         ./Compatibility.sh "${aleph_node_dir}" | grep "__output:tag:" | cut -d: -f3 > tmp-output.txt
         featurenet_template_tag=$(cat tmp-output.txt)
         if [[ -z "${featurenet_template_tag}" ]]; then
