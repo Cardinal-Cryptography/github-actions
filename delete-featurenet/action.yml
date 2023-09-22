@@ -9,6 +9,9 @@ inputs:
   repo-featurenets-name:
     description: 'Name of the repository containing featurenets manifests'
     required: true
+  repo-featurenet-template-name:
+    description: 'Name of the repository containing featurenet template'
+    required: true
   aws-access-key-id:
     description: 'AWS Access Key ID to be used in the action'
     required: true
@@ -68,6 +71,29 @@ runs:
         path: "${{ inputs.repo-featurenets-name }}"
         ref: main
 
+    - name: Get feature template tag
+      shell: bash
+      id: get-featurenet-template-tag
+      run: |
+        cd "${{ inputs.repo-featurenets-name }}"
+        featurenet_template_tag=main
+        if [[ -f "fe-${{ steps.get-final-name.outputs.final-featurenet-name }}.tag.txt" ]]; then
+          featurenet_template_tag=$(cat "fe-${{ steps.get-final-name.outputs.final-featurenet-name }}.tag.txt")
+          if [[ -z "${featurenet_template_tag}" ]]; then
+            featurenet_template_tag=main
+          fi 
+        fi
+        echo "featurenet-template-tag=${featurenet_template_tag}" >> $GITHUB_OUTPUT
+
+    - name: Checkout featurenet template repo
+      uses: actions/checkout@v3
+      with:
+        repository: Cardinal-Cryptography/${{ inputs.repo-featurenet-template-name }}
+        token: ${{ inputs.gh-ci-token }}
+        path: "${{ inputs.repo-featurenet-template-name }}"
+        ref: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}
+        fetch-depth: 0
+
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
       env:
@@ -79,8 +105,10 @@ runs:
 
     - name: Destroy feature branch
       shell: bash
+      env:
+        OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
-        cd "${{ inputs.repo-featurenets-name }}"
+        cd "${{ inputs.repo-featurenet-template-name }}"
         ./Ops.sh delete-featurenet "${{ steps.get-final-name.outputs.final-featurenet-name }}"
       # yamllint enable rule:line-length
 
@@ -90,14 +118,16 @@ runs:
         author_name: "${{ inputs.git-commit-author }}"
         author_email: "${{ inputs.git-commit-email }}"
         message: "Delete featurenet ${{ steps.get-final-name.outputs.final-featurenet-name }}"
-        add: '["*.yaml","*.expiration.txt"]'
+        add: '["*.yaml","*.expiration.txt","*.tag.txt"]'
         cwd: "${{ inputs.repo-featurenets-name }}"
 
     # we need self-hosted runner only because of this step
     - name: Refresh Argo and wait for the deletion to be finished
       shell: bash
+      env:
+        OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
-        cd "${{ inputs.repo-featurenets-name }}"
+        cd "${{ inputs.repo-featurenet-template-name }}"
         ./Ops.sh refresh-featurenets "${{ inputs.argo-host }}" \
           "${{ inputs.argo-sync-user-token }}"
 
