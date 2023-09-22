@@ -155,7 +155,7 @@ runs:
             git checkout "${{ inputs.featurenet-aleph-node-image }}"
           fi
         else
-          git checkout "${{ steps.get-ref-properties.outputs.sha }}"
+          git checkout "${{ steps.get-ref-properties.outputs.name }}"
         fi
 
     - name: Checkout featurenets repo
