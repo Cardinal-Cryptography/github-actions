@@ -282,6 +282,8 @@ runs:
     - name: Wait for the unique consecutive finalized heads
       if: inputs.wait-for-finalized-heads == 'true'
       shell: bash
+      env:
+        OPSSH_TARGETPATH: "${{ github.workspace }}/${{ inputs.repo-featurenets-name }}"
       run: |
         cd "${{ inputs.repo-featurenet-template-name }}"
         ./Ops.sh wait-for-finalized-heads "${{ steps.start-featurenet.outputs.ws-hostname }}"
