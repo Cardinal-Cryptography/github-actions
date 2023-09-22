@@ -141,7 +141,7 @@ runs:
       with:
         repository: Cardinal-Cryptography/aleph-node
         token: ${{ inputs.gh-ci-token }}
-        path: "aleph-node-testnet-or-mainnet"
+        path: "aleph-node-compatibility"
         fetch-depth: 0
         ref: main
 
@@ -150,8 +150,17 @@ runs:
         inputs.featurenet-aleph-node-image == 'mainnet' }}
       shell: bash
       run: |
-        cd aleph-node-testnet-or-mainnet
+        cd aleph-node-compatibility
         git checkout "${{ steps.get-node-commit-sha.outputs.sha }}"
+
+    - name: Checkout aleph-node repo on input commit
+      if: ${{ inputs.featurenet-aleph-node-image != 'testnet' &&
+        inputs.featurenet-aleph-node-image != 'mainnet' && 
+        inputs.featurenet-aleph-node-image != '' }}
+      shell: bash
+      run: |
+        cd aleph-node-compatibility
+        git checkout "${{ inputs.featurenet-aleph-node-image }}"
 
     - name: Checkout featurenets repo
       uses: actions/checkout@v3
@@ -177,7 +186,7 @@ runs:
       run: |
         if [[ "${{ inputs.featurenet-aleph-node-image }}" == 'testnet' || \
           "${{ inputs.featurenet-aleph-node-image }}" == "mainnet" ]]; then
-          aleph_node_dir=${{ github.workspace }}/aleph-node-testnet-or-mainnet
+          aleph_node_dir=${{ github.workspace }}/aleph-node-compatibility
         else
           aleph_node_dir=${{ github.workspace }}
         fi
