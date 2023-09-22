@@ -183,8 +183,7 @@ runs:
       shell: bash
       # yamllint disable rule:line-length
       run: |
-        if [[ "${{ inputs.featurenet-aleph-node-image }}" == 'testnet' || \
-          "${{ inputs.featurenet-aleph-node-image }}" == "mainnet" ]]; then
+        if [[ "${{ inputs.featurenet-aleph-node-image }}" != '' ]]; then
           aleph_node_dir=${{ github.workspace }}/aleph-node-compatibility
         else
           aleph_node_dir=${{ github.workspace }}
