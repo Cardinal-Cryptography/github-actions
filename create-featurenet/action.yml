@@ -273,7 +273,7 @@ runs:
       env:
         OPSSH_TARGETPATH: "${{ github.workspace }}/${{ inputs.repo-featurenets-name }}"
       run: |
-        cd "${{ inputs.repo-featurenets-name }}"
+        cd "${{ inputs.repo-featurenet-template-name }}"
         ./Ops.sh refresh-featurenets "${{ inputs.argo-host }}" \
           "${{ inputs.argo-sync-user-token }}" \
           "${{ inputs.featurenet-name }}" \
