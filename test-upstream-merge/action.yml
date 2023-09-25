@@ -52,6 +52,8 @@ runs:
       continue-on-error: true
       run: |
         cd target
+        git config user.name "AlephZero"
+        git config user.email "dummy.email@example.com"
         git merge upstream/${{ inputs.upstream-branch }}
 
     - name: Send notification
