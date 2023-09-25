@@ -18,11 +18,20 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v3
 
-      - name: Run test on some repo
+      - name: Run failure test
         uses: ./test-upstream-merge
         with:
           target-repo: ForthcomingSystems/test-repo1-fork
           target-branch: main
           upstream-repo-url: https://github.com/MikolajGasior/test-repo1
+          upstream-branch: main
+          slack-webhook-url: ${{ secrets.SLACK_INCOMING_WEBHOOK_TEMP_SLACK_NOTIFICATIONS }}
+
+      - name: Run success test
+        uses: ./test-upstream-merge
+        with:
+          target-repo: Marcin-Radecki/aleph-node
+          target-branch: main
+          upstream-repo-url: https://github.com/Cardinal-Cryptography/aleph-node
           upstream-branch: main
           slack-webhook-url: ${{ secrets.SLACK_INCOMING_WEBHOOK_TEMP_SLACK_NOTIFICATIONS }}
