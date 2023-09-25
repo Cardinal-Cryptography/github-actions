@@ -4,7 +4,7 @@
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": ":exclamation: *Failed to merge upstream __UPSTREAM__ to __TARGET__!*"
+				"text": ":exclamation: *Failed to merge upstream __UPSTREAM__ to __TARGET__*"
 			},
 			"accessory": {
 				"type": "button",
