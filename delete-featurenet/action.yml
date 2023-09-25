@@ -118,7 +118,7 @@ runs:
         author_name: "${{ inputs.git-commit-author }}"
         author_email: "${{ inputs.git-commit-email }}"
         message: "Delete featurenet ${{ steps.get-final-name.outputs.final-featurenet-name }}"
-        add: '["*.yaml","*.expiration.txt","*.tag.txt"]'
+        add: '["*.yaml","*.txt"]'
         cwd: "${{ inputs.repo-featurenets-name }}"
 
     # we need self-hosted runner only because of this step
