@@ -61,7 +61,7 @@ runs:
       if: ${{ inputs.slack-webhook-url != '' }}
       run: |
         run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-        target="${ inputs.target-repo }}/${{ inputs.target-branch }}"
+        target="${{ inputs.target-repo }}/${{ inputs.target-branch }}"
         upstream="${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}"
         if [[ "${{ steps.merge-upstream.outcome }}" == "failure" ]]; then
           cat ${{ github.action_path }}/slack-msg-failure.json > tmp-slack-msg.json
