@@ -1,0 +1,71 @@
+---
+name: Test upstream merge
+description: |
+  Adds upstream and tries to merge it
+inputs:
+  target-repo:
+    description: Repository to merge to, in format 'owner/repo'
+    required: true
+  target-branch:
+    description: Branch to merge to
+    required: true
+  upstream-repo-url:
+    description: Upstream repository URL to merge from, eg. https://github.com/owner/repo
+    required: true
+  upstream-branch:
+    description: Upstream branch to merge from
+    required: true
+  slack-webhook-url:
+    description: Slack webhook URL
+    required: false
+    default: ''
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout target repository
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.target-repo }}
+        ref: ${{ inputs.target-branch }}
+        path: target
+
+    - name: Show latest commits
+      shell: bash
+      run: |
+        git log -n 5
+
+    - name: Add upstream
+      shell: bash
+      run: |
+        cd target
+        git remote add upstream ${{ inputs.upstream-repo-url }}
+        git fetch upstream
+        git remote -v
+        git remote show upstream
+
+    - name: Merge upstream
+      shell: bash
+      id: merge-upstream
+      continue-on-error: true
+      run: |
+        cd target
+        git merge upstream/${{ inputs.upstream-branch }}
+
+    - name: Send notification
+      shell: bash
+      if: ${{ inputs.slack-webhook-url != '' }}
+      run: |
+        run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        target="${ inputs.target-repo }}/${{ inputs.target-branch }}"
+        upstream="${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}"
+        if [[ "${{ steps.merge-upstream.outcome }}" == "failure" ]]; then
+          cat ${{ github.action_path }}/slack-msg-failure.json > tmp-slack-msg.json
+        else
+          cat ${{ github.action_path }}/slack-msg-success.json > tmp-slack-msg.json
+        fi
+        sed -i "s|__RUN_URL__|${run_url}|g" tmp-slack-msg.json
+        sed -i "s|__TARGET__|${target}|g" tmp-slack-msg.json
+        sed -i "s|__UPSTREAM__|${upstream}|g" tmp-slack-msg.json
+        
+        curl -X POST -d @tmp-slack-msg.json "${{ inputs.slack-webhook-url }}"

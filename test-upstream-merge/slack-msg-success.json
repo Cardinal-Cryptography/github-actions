@@ -1,0 +1,21 @@
+{
+	"blocks": [
+		{
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": ":sunglasses: Succeeded to merge upstream __UPSTREAM__ to __TARGET__!"
+			},
+			"accessory": {
+				"type": "button",
+				"text": {
+					"type": "plain_text",
+					"text": ":mag:",
+					"emoji": true
+				},
+				"value": "click_me_123",
+				"url": "https://__RUN_URL__.co"
+			}
+		}
+	]
+}
