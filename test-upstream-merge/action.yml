@@ -29,10 +29,12 @@ runs:
         repository: ${{ inputs.target-repo }}
         ref: ${{ inputs.target-branch }}
         path: target
+        fetch-depth: 0
 
     - name: Show latest commits
       shell: bash
       run: |
+        cd target
         git log -n 5
 
     - name: Add upstream
