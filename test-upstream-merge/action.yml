@@ -88,7 +88,7 @@ runs:
         repo_name=$(echo "${{ inputs.target-repo }}" | cut -d/ -f2)
         data="{\"title\":\"Merge upstream\",\"body\":\"${pr_body}\",\"head\":\"${repo_name}:${pr_branch}\",\"base\":\"${{ inputs.target-branch }}\"}"
         echo ${data}
-        curl -L \
+        curl -vvv -L \
           -X POST \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ inputs.gh-ci-token }}" \
