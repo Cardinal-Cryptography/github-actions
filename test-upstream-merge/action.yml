@@ -39,6 +39,7 @@ runs:
         ref: ${{ inputs.target-branch }}
         path: target
         fetch-depth: 0
+        token: ${{ inputs.gh-ci-token }}
 
     - name: Show latest commits
       shell: bash
