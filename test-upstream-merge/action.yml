@@ -85,7 +85,8 @@ runs:
         git push origin "${pr_branch}"
 
         pr_body="Merging upstream from ${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}"
-        data="{\"title\":\"Merge upstream\",\"body\":\"PR_BODY_HERE\",\"head\":\"${{ inputs.target-repo }}:${pr_branch}\",\"base\":\"${{ inputs.target-branch }}\"}"
+        repo_name=$(echo "${{ inputs.target-repo | cut -d/ -f2 }}")
+        data="{\"title\":\"Merge upstream\",\"body\":\"${pr_body}\",\"head\":\"${repo_name}:${pr_branch}\",\"base\":\"${{ inputs.target-branch }}\"}"
         echo ${data}
         curl -L \
           -X POST \
