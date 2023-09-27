@@ -76,7 +76,7 @@ runs:
         set -e
         git add .
         git commit -m "Merge upstream from ${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}"
-        git push origin "${{ inputs.pr_branch }}"
+        git push origin "${pr_branch}"
 
         pr_body="Merging upstream from ${{ inputs.upstream-repo-url }}@{{ inputs.upstream-branch }}"
         curl -L \
