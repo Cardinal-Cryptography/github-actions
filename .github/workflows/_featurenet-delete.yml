@@ -65,6 +65,7 @@ jobs:
           github_token: ${{ secrets.CI_GH_TOKEN }}
 
       - name: Delete environment
+        # yamllint disable-line rule:line-length
         if: ${{ matrix.updatenet-gh-env != 'devnet' && matrix.updatenet-gh-env != 'testnet' && matrix.updatenet-gh-env != 'mainnet' }}
         uses: Cardinal-Cryptography/github-actions/gh-deployments-environments@v1
         with:
