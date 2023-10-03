@@ -91,7 +91,7 @@ jobs:
     secrets: inherit
 
   create-featurenet:
-    needs: [push-featurnet-node-image-to-ecr, get-final-names]
+    needs: [get-final-names, check-vars-and-secrets]
     name: Create featurenet based on the PR
     runs-on: [self-hosted, Linux, X64, small]
     outputs:
