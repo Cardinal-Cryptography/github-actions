@@ -1,58 +1,25 @@
 ---
-name: FE - Create from net
+name: FE - Update
 
 on:
-  workflow_dispatch:
-    inputs:
-      featurenet-name:
-        description: 'Name of the featurenet'
-        required: true
-        type: string
-      start:
-        description: 'aleph-node image to be started'
-        required: true
-        type: choice
-        options:
-          - testnet
-          - mainnet
-        default: testnet
-      expiration:
-        description: 'Time after which featurenet will be removed'
-        required: true
-        type: choice
-        options:
-          - 48h
-          - 24h
-          - 12h
-          - 3h
-          - 96h
-          - never
-        default: 48h
-      replicas:
-        description: 'Number of replicas to start, from 0 to 50'
-        required: true
-        default: '5'
-        type: string
-      internal:
-        description: 'Internal network, accessible from VPN only'
-        required: true
-        type: boolean
-        default: false
   workflow_call:
     inputs:
       featurenet-name:
-        description: 'Name of the featurenet'
+        description: Name of featurenet
         required: true
         type: string
-      start:
-        description: 'aleph-node image to be started'
+      destination:
+        description: Node image tag, ie 7-byte SHA of some existing ECR aleph-node image tag
         required: true
         type: string
-      expiration:
-        description: 'Time after which featurenet will be removed: "Xh" or "never"'
+      rolling-update-partition:
+        description: |
+          Number from 0 to N-1, where N is size of am existing featurenet.
+          All aleph-node-validator-N with an ordinal N that is great than or equal to the partition
+          will be updated. If not specified, all nodes will be updated.
         required: false
+        default: "0"
         type: string
-        default: 48h
       replicas:
         description: 'Number of replicas to start, from 0 to 50'
         required: false
@@ -70,15 +37,34 @@ jobs:
     uses: ./.github/workflows/_check-vars-and-secrets.yml
     secrets: inherit
 
-  create-featurenet:
+  update-featurenet:
     needs: [check-vars-and-secrets]
-    name: Create featurenet
+    name: Update featurenet
     runs-on: [self-hosted, Linux, X64, small]
     outputs:
       deployment-id: ${{ steps.deployment.outputs.deployment_id }}
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - name: Validate inputs
+        shell: bash
+        run: |
+          if [[ ! "${{ inputs.featurenet-name }}" =~ ^[a-z0-9][a-z0-9\-]{4,44}$ ]]; then
+            echo "!!! Invalid featurenet name"
+            exit 1
+          fi
+          if [[
+            "${{ inputs.destination }}" != "" && \
+            ! "${{ inputs.destination }}" =~ ^[a-f0-9]{7}$
+          ]]; then
+            echo "!!! Expected a 7-byte SHA in destination parameter"
+            exit 1
+          fi
+          if [[
+            "${{ inputs.rolling-update-partition }}" != "" && \
+            ! "${{ inputs.rolling-update-partition }}" =~ ^[0-9]$ \
+          ]]; then
+            echo "!!! Expected rolling update partition to be a cardinal value from 0 to 9"
+            exit 1
+          fi
 
       - name: Get featurenet name
         id: get-featurenet-name
@@ -93,26 +79,12 @@ jobs:
             echo "!!! Invalid name"
             exit 1
           fi
-          final_featurenet_name_local=${{ inputs.featurenet-name != '' && inputs.featurenet-name || github.run_id }}
+          final_featurenet_name_local=${{ inputs.featurenet-name }}
           echo "final-featurenet-name=$final_featurenet_name_local" >> $GITHUB_OUTPUT
         # yamllint enable rule:line-length
 
-      - name: Delete old featurenet app and data
-        if: contains(github.event.pull_request.labels.*.name, 'state:created-featurenet')
-        uses: Cardinal-Cryptography/github-actions/delete-featurenet@v2
-        with:
-          gh-ci-token: ${{ secrets.CI_GH_TOKEN }}
-          aws-access-key-id: ${{ secrets.AWS_DEVNET_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_DEVNET_SECRET_ACCESS_KEY }}
-          ecr-public-registry: ${{ vars.ECR_PUBLIC_REGISTRY }}
-          argo-sync-user-token: ${{ secrets.ARGO_SYNC_USER_TOKEN }}
-          repo-featurenets-name: ${{ secrets.REPO_OPS_FEATURENETS_NAME }}
-          repo-featurenet-template-name: ${{ secrets.REPO_FEATURENET_TEMPLATE_NAME }}
-          argo-host: ${{ secrets.ARGOCD_DEVNET_HOST }}
-          featurenet-keys-s3bucket-name: ${{ secrets.FEATURENET_KEYS_S3BUCKET_NAME }}
-          featurenet-name: ${{ steps.get-featurenet-name.outputs.final-featurenet-name }}
-          git-commit-author: ${{ secrets.AUTOCOMMIT_AUTHOR }}
-          git-commit-email: ${{ secrets.AUTOCOMMIT_EMAIL }}
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
       - name: Start featurenet Deployment
         uses: bobheadxi/deployments@v1.1.0
@@ -122,9 +94,8 @@ jobs:
           token: ${{ secrets.CI_GH_TOKEN }}
           env: ${{ steps.get-featurenet-name.outputs.final-featurenet-name }}
           override: true
-          debug: true
 
-      - name: Create featurenet from scratch, node binary from testnet or mainnet
+      - name: Update featurenet data, app and deploy it
         uses: Cardinal-Cryptography/github-actions/create-featurenet@v2
         id: create-featurenet
         with:
@@ -136,12 +107,13 @@ jobs:
           ecr-public-registry: ${{ vars.ECR_PUBLIC_REGISTRY }}
           featurenet-keys-s3bucket-name: ${{ secrets.FEATURENET_KEYS_S3BUCKET_NAME }}
           featurenet-name: ${{ steps.get-featurenet-name.outputs.final-featurenet-name }}
-          featurenet-aleph-node-image: ${{ inputs.start == 'mainnet' && 'mainnet' || 'testnet' }}
-          expiration: ${{ inputs.expiration }}
+          featurenet-aleph-node-image: ${{ inputs.destination }}
+          rolling-update-partition: ${{ inputs.rolling-update-partition }}
           replicas: ${{ inputs.replicas }}
           internal: ${{ inputs.internal && 'true' || 'false' }}
           git-commit-author: ${{ secrets.AUTOCOMMIT_AUTHOR }}
           git-commit-email: ${{ secrets.AUTOCOMMIT_EMAIL }}
+          hard-refresh: 'true'
           wait-for-finalized-heads: "true"
 
       - name: Finish featurenet Deployment
@@ -155,4 +127,3 @@ jobs:
           deployment_id: ${{ steps.deployment.outputs.deployment_id }}
           # yamllint disable-line rule:line-length
           env_url: https://dev.azero.dev/?rpc=wss%3A%2F%2F${{ steps.create-featurenet.outputs.ws-hostname }}#/explorer
-          debug: true
