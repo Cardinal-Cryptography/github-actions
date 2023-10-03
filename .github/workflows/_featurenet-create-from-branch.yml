@@ -49,7 +49,7 @@ jobs:
     secrets: inherit
 
   create-featurenet:
-    needs: [get-final-names, check-vars-and-secrets]
+    needs: [check-vars-and-secrets]
     name: Create featurenet based on the PR
     runs-on: [self-hosted, Linux, X64, small]
     outputs:

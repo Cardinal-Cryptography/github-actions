@@ -34,7 +34,7 @@ jobs:
     secrets: inherit
 
   delete-featurenet:
-    needs: [check-vars-and-secrets, get-final-names]
+    needs: [check-vars-and-secrets]
     name: Delete featurenet
     runs-on: [self-hosted, Linux, X64, small]
     steps:
