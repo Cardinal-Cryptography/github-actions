@@ -84,23 +84,6 @@ jobs:
             exit 1
           fi
 
-      - name: Get featurenet name
-        id: get-featurenet-name
-        shell: bash
-        # yamllint disable rule:line-length
-        run: |
-          if [[
-            "${{ inputs.featurenet-name }}" != "" && \
-            ! "${{ inputs.featurenet-name }}" =~ ^[a-z0-9][a-z0-9\-]{4,30}$
-          ]]
-          then
-            echo "!!! Invalid name"
-            exit 1
-          fi
-          final_featurenet_name_local=${{ inputs.featurenet-name }}
-          echo "final-featurenet-name=$final_featurenet_name_local" >> $GITHUB_OUTPUT
-        # yamllint enable rule:line-length
-
       - name: Checkout repo
         uses: actions/checkout@v4
 
@@ -110,7 +93,7 @@ jobs:
         with:
           step: start
           token: ${{ secrets.CI_GH_TOKEN }}
-          env: ${{ steps.get-featurenet-name.outputs.final-featurenet-name }}
+          env: ${{ inputs.featurenet-name }}
           override: true
 
       - name: Update featurenet data, app and deploy it
@@ -124,7 +107,7 @@ jobs:
           argo-host: ${{ secrets.ARGOCD_DEVNET_HOST }}
           ecr-public-registry: ${{ vars.ECR_PUBLIC_REGISTRY }}
           featurenet-keys-s3bucket-name: ${{ secrets.FEATURENET_KEYS_S3BUCKET_NAME }}
-          featurenet-name: ${{ steps.get-featurenet-name.outputs.final-featurenet-name }}
+          featurenet-name: ${{ inputs.featurenet-name }}
           featurenet-aleph-node-image: ${{ inputs.destination }}
           rolling-update-partition: ${{ inputs.rolling-update-partition }}
           replicas: ${{ inputs.replicas }}
@@ -141,7 +124,7 @@ jobs:
           step: finish
           token: ${{ secrets.CI_GH_TOKEN }}
           status: ${{ job.status }}
-          env: ${{ steps.get-featurenet-name.outputs.final-featurenet-name }}
+          env: ${{ inputs.featurenet-name }}
           deployment_id: ${{ steps.deployment.outputs.deployment_id }}
           # yamllint disable-line rule:line-length
           env_url: https://dev.azero.dev/?rpc=wss%3A%2F%2F${{ steps.create-featurenet.outputs.ws-hostname }}#/explorer
