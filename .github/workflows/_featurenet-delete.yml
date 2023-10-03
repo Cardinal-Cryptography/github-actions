@@ -72,7 +72,7 @@ jobs:
           env: ${{ inputs.featurenet-name }}
           token: ${{ secrets.CI_GH_TOKEN }}
           owner: ${{ github.repository_owner }}
-          repo: ${{ github.repository }}
+          repo: ${{ github.event.repository.name }}
 
       - name: Remove delete deployment request label if exists
         if: contains(github.event.pull_request.labels.*.name, 'trigger:delete-featurenet')
