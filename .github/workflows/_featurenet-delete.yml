@@ -64,20 +64,15 @@ jobs:
           labels: 'state:created-featurenet'
           github_token: ${{ secrets.CI_GH_TOKEN }}
 
-      - name: Deactivate deployed environment
-        uses: bobheadxi/deployments@v1
+      - name: Delete environment
+        if: ${{ matrix.updatenet-gh-env != 'devnet' && matrix.updatenet-gh-env != 'testnet' && matrix.updatenet-gh-env != 'mainnet' }}
+        uses: Cardinal-Cryptography/github-actions/gh-deployments-environments@v1
         with:
-          step: deactivate-env
-          token: ${{ secrets.CI_GH_TOKEN }}
+          action: delete-environment
           env: ${{ inputs.featurenet-name }}
-          desc: Environment was deleted
-          debug: true
-
-      - name: Delete environment and deployments
-        uses: strumwolf/delete-deployment-environment@v2
-        with:
           token: ${{ secrets.CI_GH_TOKEN }}
-          environment: ${{ inputs.featurenet-name }}
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.repository }}
 
       - name: Remove delete deployment request label if exists
         if: contains(github.event.pull_request.labels.*.name, 'trigger:delete-featurenet')
