@@ -36,10 +36,6 @@ inputs:
     description: 'Make hard-refresh of ArgoCD application'
     required: false
     default: "false"
-  wait-for-finalized-heads:
-    description: 'Wait for heads finalization'
-    required: false
-    default: "false"
 outputs:
   app-name:
     description: |
