@@ -1,0 +1,131 @@
+---
+name: Create branchpreview
+description: Creates branchpreview
+inputs:
+  gh-ci-token:
+    description: 'GH token to be used in the action'
+    required: true
+  repo-branchpreviews-name:
+    description: 'Name of the repository containing branchpreview manifests'
+    required: true
+  repo-branchpreview-templates-name:
+    description: 'Name of the repository containing branchpreview templates'
+    required: true
+  argo-host:
+    description: 'ArgoCD host'
+    required: true
+  argo-sync-user-token:
+    description: 'ArgoCD user token to be used in the action'
+    required: true
+  repository-name:
+    description: 'Repository name'
+    required: true
+  branch-name:
+    description: 'Branch name'
+    required: true
+  git-commit-author:
+    description: 'Git commit author when pushing to branchpreviews repository'
+    required: true
+  git-commit-email:
+    description: 'Git commit email when pushing to branchpreviews repository'
+    required: true
+  image:
+    description: 'Full docker image in format of host/repo:tag'
+    required: true
+  hard-refresh:
+    description: 'Make hard-refresh of ArgoCD application'
+    required: false
+    default: "false"
+  wait-for-finalized-heads:
+    description: 'Wait for heads finalization'
+    required: false
+    default: "false"
+outputs:
+  app-name:
+    description: |
+      App name based on repo and branch with a prefix, used in ArgoCD app, 
+      URLs etc.
+    value: ${{ steps.start-branchpreview.outputs.app-name }}
+  safe-branch-name:
+    description: Safe branch name
+    value: ${{ steps.start-branchpreview.outputs.safe-branch-name }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate inputs
+      shell: bash
+      run: |
+        if [[
+          ! "${{ inputs.repository-name }}" =~ ^[a-zA-Z0-9-]+$
+        ]]
+        then
+          echo "!!! Invalid repository name"
+          exit 1
+        fi
+
+        if [[
+          ! "${{ inputs.branch-name }}" =~ ^[a-zA-Z0-9/_-]+$
+        ]]
+        then
+          echo "!!! Invalid branch name"
+          exit 1
+        fi
+
+    - name: Checkout branchpreviews repo
+      uses: actions/checkout@v3
+      with:
+        repository: Cardinal-Cryptography/${{ inputs.repo-branchpreviews-name }}
+        token: ${{ inputs.gh-ci-token }}
+        path: "${{ inputs.repo-branchpreviews-name }}"
+        ref: main
+
+    - name: Checkout branchpreview templates repo
+      uses: actions/checkout@v3
+      with:
+        repository: Cardinal-Cryptography/${{ inputs.repo-branchpreview-templates-name }}
+        token: ${{ inputs.gh-ci-token }}
+        path: "${{ inputs.repo-branchpreview-templates-name }}"
+        ref: compatibility
+
+    - name: Start branchpreview
+      id: start-branchpreview
+      shell: bash
+      # yamllint disable rule:line-length
+      env:
+        OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-branchpreviews-name }}
+      run: |
+        cd "${{ inputs.repo-branchpreview-templates-name }}"
+        ./Ops.sh create-branchpreview \
+          "${{ inputs.repository-name }}" \
+          "${{ inputs.branch-name }}" \
+          "${{ inputs.image }}" | tee -a tmp-opssh-createbranchpreviews-output.txt
+
+        app_name=$(cat tmp-opssh-createbranchpreviews-output.txt | grep "^__output:app-name:" | cut -d: -f3)
+        safe_branch_name=$(cat tmp-opssh-createbranchpreviews-output.txt | grep "^__output:safe-branch-name:" | cut -d: -f3)
+        image_tag=$(echo "${{ inputs.image }}" | cut -d: -f2)
+        echo "app-name=${app_name}" >> $GITHUB_OUTPUT
+        echo "safe-branch-name=${safe_branch_name}" >> $GITHUB_OUTPUT
+        echo "image-tag=${image_tag}" >> $GITHUB_OUTPUT
+      # yamllint enable rule:line-length
+
+    - name: Commit branchpreview change
+      uses: EndBug/add-and-commit@v9.1.1
+      with:
+        author_name: "${{ inputs.git-commit-author }}"
+        author_email: "${{ inputs.git-commit-email }}"
+        # yamllint disable-line rule:line-length
+        message: "Upsert ${{ inputs.repository-name }}:${{ inputs.branch-name }} with image tag: ${{ steps.start-branchpreview.outputs.image-tag }}"
+        add: '["*.yaml","*.txt"]'
+        cwd: "${{ inputs.repo-branchpreviews-name }}"
+
+    - name: Refresh Argo and wait for the creation to be finished
+      shell: bash
+      env:
+        OPSSH_TARGETPATH: "${{ github.workspace }}/${{ inputs.repo-branchpreviews-name }}"
+      run: |
+        cd "${{ inputs.repo-branchpreview-templates-name }}"
+        ./Ops.sh refresh-branchpreviews "${{ inputs.argo-host }}" \
+          "${{ inputs.argo-sync-user-token }}" \
+          "${{ steps.start-branchpreview.outputs.app-name }}" \
+          "${{ inputs.hard-refresh == 'true' && 'true' || 'false' }}"
