@@ -41,6 +41,21 @@ runs:
         fetch-depth: 0
         token: ${{ inputs.gh-ci-token }}
 
+    - name: Get upstream repository name from URL
+      shell: bash
+      id: get-repository-name
+      run: |
+        echo "repository-name=$(echo '${{ inputs.upstream-repo-url }}' | sed 's|https://github.com/||g')" >> $GITHUB_OUTPUT
+
+    - name: Checkout upstream repository
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ steps.get-repository-name.outputs.repository-name }}
+        ref: ${{ inputs.upstream-branch }}
+        path: upstream
+        fetch-depth: 0
+        token: ${{ inputs.gh-ci-token }}
+
     - name: Show latest commits
       shell: bash
       run: |
@@ -55,6 +70,10 @@ runs:
         git fetch upstream
         git remote -v
         git remote show upstream
+
+        echo "merge-base"
+        git merge-base ${{ inputs.target-branch }} upstream/${{ inputs.upstream-branch }}
+        echo "merge-base"
 
     - name: Merge upstream
       shell: bash
