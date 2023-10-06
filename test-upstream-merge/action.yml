@@ -88,7 +88,7 @@ runs:
         git config user.email "${{ inputs.git-commit-author }}"
 
         pr_branch="upstreambot-merge-upstream"
-        merge_base=$(merge-base "${{ inputs.target-branch }}" "upstream/${{ inputs.upstream-branch }}")
+        merge_base=$(git merge-base "${{ inputs.target-branch }}" "upstream/${{ inputs.upstream-branch }}")
 
         # Removing existing branch, feel free to remove that step
         set +e
