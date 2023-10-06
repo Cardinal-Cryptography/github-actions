@@ -169,8 +169,8 @@ runs:
         sleep 5
 
         # Set outputs for further steps
-        echo "pull_request_number=$(cat tmp-curl-output.txt | jq '.number')"
-        echo "pull_request_url=$(cat tmp-curl-output.txt | jq '.html_url')"
+        echo "pull-request-number=$(cat tmp-curl-output.txt | jq '.number')" >> $GITHUB_OUTPUT
+        echo "pull-request-url=$(cat tmp-curl-output.txt | jq '.html_url')" >> $GITHUB_OUTPUT
       # yamllint disable rule:line-length
 
     - name: Check for conflicts
@@ -206,8 +206,8 @@ runs:
         run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         target="${{ inputs.target-repo }}/${{ inputs.target-branch }}"
         upstream="${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}"
-        pull_request_number="${{ steps.create-pull-request.outputs.pull_request_number }}"
-        pull_request_url="${{ steps.create-pull-request.outputs.pull_request_url }}"
+        pull_request_number="${{ steps.create-pull-request.outputs.pull-request-number }}"
+        pull_request_url="${{ steps.create-pull-request.outputs.pull-request-url }}"
         if [[ "${{ steps.merge-upstream.outputs.merge-failed }}" == "1" ]]; then
           cat ${{ github.action_path }}/slack-msg-failure.json > tmp-slack-msg.json
         else
