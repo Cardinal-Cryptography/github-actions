@@ -68,7 +68,7 @@ runs:
       run: |
         cd upstream
         git log -n 3
-        echo "upstream-sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
     - name: Add upstream
       shell: bash
@@ -114,12 +114,28 @@ runs:
         sleep 5
 
         # Create a pull request
-        pr_title="Merge upstream from ${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}"
-        pr_body="Merging upstream from ${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }} which is at ${merge_base}"
-        repo_name=$(echo "${{ inputs.target-repo }}" | cut -d/ -f2)
+        pr_title="Merge upstream from ${{ steps.get-repository-name.outputs.repository-name }}@${{ inputs.upstream-branch }} (${{ steps.get-upstream-sha.outputs.sha }})"
+        cat >pr_body.txt <<EOF
+# Merge upstream
+## Upstream details
+
+- Repository URL: ${{ inputs.upstream-repo-url }}
+- Repository name: ${{ steps.get-repository-name.outputs.repository-name }}
+- Branch: ${{ inputs.upstream-branch }}
+- Commit SHA: ${{ steps.get-upstream-sha.outputs.sha }}
+
+## Target details
+
+- Repository: ${{ inputs.target-repo }}
+- Branch: ${{ inputs.target-branch }}
+- Recent common ancestor with upstream: ${merge_base}
+
+EOF
+        pr_body=$(cat pr_body.txt | tr '\n' '\\n')
+        
         data="{\"title\":\"${pr_title}\",\"body\":\"${pr_body}\",\"head\":\"${pr_branch}\",\"base\":\"${{ inputs.target-branch }}\"}"
-        echo ${data}
-        curl -vvv -L \
+
+        curl -L \
           -X POST \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ inputs.gh-ci-token }}" \
