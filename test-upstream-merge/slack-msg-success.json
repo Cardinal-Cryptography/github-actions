@@ -4,7 +4,7 @@
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": ":sunglasses: Succeeded to merge upstream __UPSTREAM__ to __TARGET__* (pull request: <__PULL_REQUEST_URL__|#__PULL_REQUEST_NUMBER__>)"
+				"text": ":sunglasses: Succeeded to merge upstream __UPSTREAM__ to __TARGET__ (pull request: <__PULL_REQUEST_URL__|#__PULL_REQUEST_NUMBER__>)"
 			},
 			"accessory": {
 				"type": "button",
