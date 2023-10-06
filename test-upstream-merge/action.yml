@@ -198,7 +198,7 @@ runs:
       shell: bash
       if: ${{ inputs.slack-webhook-url != '' }}
       run: |
-        if [[ "${{ steps.get-upstream-sha.outputs.sha }}" == "${{ steps.get-target-sha.outputs.sha }}" ]]; 
+        if [[ "${{ steps.get-upstream-sha.outputs.sha }}" == "${{ steps.get-target-sha.outputs.sha }}" ]]; then
           echo "SHA are identical.  There is nothing to do."
           exit 0
         fi
