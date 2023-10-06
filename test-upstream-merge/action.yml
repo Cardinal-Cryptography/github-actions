@@ -53,14 +53,16 @@ runs:
         repository: ${{ steps.get-repository-name.outputs.repository-name }}
         ref: ${{ inputs.upstream-branch }}
         path: upstream
-        fetch-depth: 0
+        fetch-depth: 1
         token: ${{ inputs.gh-ci-token }}
 
-    - name: Show target latest commits
+    - name: Get target last commit SHA
       shell: bash
+      id: get-target-sha
       run: |
         cd target
         git log -n 3
+        echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
     - name: Get upstream last commit SHA
       shell: bash
@@ -70,7 +72,17 @@ runs:
         git log -n 3
         echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
+    - name: Remove existing upstream merge branch if nothing to do
+      if: ${{ steps.get-upstream-sha.outputs.sha == steps.get-target-sha.outputs.sha }}
+      shell: bash
+      run: |
+        echo "Nothing to do, removing existing auto merge branch"
+        set +e
+        git push origin :${pr_branch}
+        set -e
+
     - name: Add upstream
+      if: ${{ steps.get-upstream-sha.outputs.sha != steps.get-target-sha.outputs.sha }}
       shell: bash
       run: |
         cd target
@@ -80,6 +92,7 @@ runs:
         git remote show upstream
 
     - name: Merge upstream
+      if: ${{ steps.get-upstream-sha.outputs.sha != steps.get-target-sha.outputs.sha }}
       shell: bash
       id: create-pull-request
       # yamllint enable rule:line-length
@@ -152,11 +165,12 @@ runs:
       # yamllint disable rule:line-length
 
     - name: Check for conflicts
+      if: ${{ steps.get-upstream-sha.outputs.sha != steps.get-target-sha.outputs.sha }}
       shell: bash
       id: merge-upstream
       run: |
         cd target
-        checkout "${{ inputs.target-branch }}"
+        git checkout "${{ inputs.target-branch }}"
 
         set +e
         merge_failed=0
@@ -168,6 +182,7 @@ runs:
         echo "merge-failed=0" >> $GITHUB_OUTPUT
 
     - name: Send notification
+      if: ${{ steps.get-upstream-sha.outputs.sha != steps.get-target-sha.outputs.sha }}
       shell: bash
       if: ${{ inputs.slack-webhook-url != '' }}
       run: |
