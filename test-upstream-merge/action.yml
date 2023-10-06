@@ -97,8 +97,10 @@ runs:
         git checkout "${merge_base}"
         git checkout -b "${pr_branch}"
         git merge upstream/${{ inputs.upstream-branch }}
+        git status
         git add .
         git commit -m "Merge upstream from ${{ steps.get-repository-name.outputs.repository-name }}@${{ inputs.upstream-branch }}:${{ steps.get-upstream-sha.outputs.sha }}"
+        git log -n 4
         git push origin "${pr_branch}"
 
         pr_body="Merging upstream from ${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}"
