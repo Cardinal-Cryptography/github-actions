@@ -81,7 +81,7 @@ runs:
 
     - name: Merge upstream
       shell: bash
-      id: merge-upstream
+      id: create-pull-request
       # yamllint enable rule:line-length
       run: |
         cd target
@@ -141,28 +141,50 @@ runs:
           -H "Authorization: Bearer ${{ inputs.gh-ci-token }}" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
           https://api.github.com/repos/${{ inputs.target-repo }}/pulls \
-          -d "${data}"
+          -d "${data}" > tmp-curl-output.txt
 
         # Wait a while to give GitHub action process things before we send another payload
         sleep 5
 
-        #echo "merge-failed=0" >> $GITHUB_OUTPUT
+        # Set outputs for further steps
+        echo "pull_request_number=$(cat tmp-curl-output.txt | jq '.number')"
+        echo "pull_request_url=$(cat tmp-curl-output.txt | jq '.html_url')"
       # yamllint disable rule:line-length
 
-    # - name: Send notification
-    #   shell: bash
-    #   if: ${{ inputs.slack-webhook-url != '' }}
-    #   run: |
-    #     run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-    #     target="${{ inputs.target-repo }}/${{ inputs.target-branch }}"
-    #     upstream="${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}"
-    #     if [[ "${{ steps.merge-upstream.outputs.merge-failed }}" == "1" ]]; then
-    #       cat ${{ github.action_path }}/slack-msg-failure.json > tmp-slack-msg.json
-    #     else
-    #       cat ${{ github.action_path }}/slack-msg-success.json > tmp-slack-msg.json
-    #     fi
-    #     sed -i "s|__RUN_URL__|${run_url}|g" tmp-slack-msg.json
-    #     sed -i "s|__TARGET__|${target}|g" tmp-slack-msg.json
-    #     sed -i "s|__UPSTREAM__|${upstream}|g" tmp-slack-msg.json
-    #     
-    #     curl -X POST -d @tmp-slack-msg.json "${{ inputs.slack-webhook-url }}"
+    - name: Check for conflicts
+      shell: bash
+      id: merge-upstream
+      run: |
+        cd target
+        checkout "${{ inputs.target-branch }}"
+
+        set +e
+        merge_failed=0
+        git merge upstream/${{ inputs.upstream-branch }}
+        if [[ $? != 0 ]]; then
+          merge_failed=1
+        fi
+
+        echo "merge-failed=0" >> $GITHUB_OUTPUT
+
+    - name: Send notification
+      shell: bash
+      if: ${{ inputs.slack-webhook-url != '' }}
+      run: |
+        run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        target="${{ inputs.target-repo }}/${{ inputs.target-branch }}"
+        upstream="${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}"
+        pull_request_number="${{ steps.create-pull-request.outputs.pull_request_number }}"
+        pull_request_url="${{ steps.create-pull-request.outputs.pull_request_url }}"
+        if [[ "${{ steps.merge-upstream.outputs.merge-failed }}" == "1" ]]; then
+          cat ${{ github.action_path }}/slack-msg-failure.json > tmp-slack-msg.json
+        else
+          cat ${{ github.action_path }}/slack-msg-success.json > tmp-slack-msg.json
+        fi
+        sed -i "s|__RUN_URL__|${run_url}|g" tmp-slack-msg.json
+        sed -i "s|__TARGET__|${target}|g" tmp-slack-msg.json
+        sed -i "s|__UPSTREAM__|${upstream}|g" tmp-slack-msg.json
+        sed -i "s|__PULL_REQUEST_NUMBER__|${pull_request_number}|g" tmp-slack-msg.json
+        sed -i "s|__PULL_REQUEST_URL__|${pull_request_url}|g" tmp-slack-msg.json
+        
+        curl -X POST -d @tmp-slack-msg.json "${{ inputs.slack-webhook-url }}"

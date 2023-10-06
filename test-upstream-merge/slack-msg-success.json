@@ -16,6 +16,23 @@
 				"value": "click_me_123",
 				"url": "https://__RUN_URL__.co"
 			}
+		},
+		{
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": ":sunglasses: *Pull request number __PULL_REQUEST_NUMBER__ has been created*"
+			},
+			"accessory": {
+				"type": "button",
+				"text": {
+					"type": "plain_text",
+					"text": ":mag:",
+					"emoji": true
+				},
+				"value": "click_me_1234",
+				"url": "__PULL_REQUEST_URL__"
+			}
 		}
 	]
 }
