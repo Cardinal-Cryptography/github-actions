@@ -78,19 +78,19 @@ runs:
       run: |
         cd target
         set +e
-        git merge-base --is-ancestor "${{ steps.get-upstream-sha.outputs.sha }}" HEAD
-        set -e
         merge_needed="no"
+        git merge-base --is-ancestor "${{ steps.get-upstream-sha.outputs.sha }}" HEAD
         if [[ $? != 0 ]]; then
           merge_needed="yes"
         fi
+        set -e
         echo "merge=${merge_needed}" >> $GITHUB_OUTPUT
 
     - name: Remove existing upstream merge branch if nothing to do
       shell: bash
       run: |
         if [[ "${{ steps.check-if-merge-needed.outputs.merge }}" != "yes" ]]; then
-          echo "SHA are identical.  There is nothing to do.  Removing existing auto merge branch..."
+          echo "Upstream SHA is an ancestor of target branch.  There is nothing to do.  Removing existing auto merge branch..."
           set +e
           git push origin :${pr_branch}
           set -e
@@ -100,7 +100,7 @@ runs:
       shell: bash
       run: |
         if [[ "${{ steps.check-if-merge-needed.outputs.merge }}" != "yes" ]]; then
-          echo "SHA are identical.  There is nothing to do."
+          echo "There is nothing to do."
           exit 0
         fi
 
@@ -116,7 +116,7 @@ runs:
       # yamllint enable rule:line-length
       run: |
         if [[ "${{ steps.check-if-merge-needed.outputs.merge }}" != "yes" ]]; then
-          echo "SHA are identical.  There is nothing to do."
+          echo "There is nothing to do."
           exit 0
         fi
 
@@ -192,7 +192,7 @@ runs:
       id: merge-upstream
       run: |
         if [[ "${{ steps.check-if-merge-needed.outputs.merge }}" != "yes" ]]; then
-          echo "SHA are identical.  There is nothing to do."
+          echo "There is nothing to do."
           exit 0
         fi
 
@@ -213,7 +213,7 @@ runs:
       if: ${{ inputs.slack-webhook-url != '' }}
       run: |
         if [[ "${{ steps.check-if-merge-needed.outputs.merge }}" != "yes" ]]; then
-          echo "SHA are identical.  There is nothing to do."
+          echo "There is nothing to do."
           exit 0
         fi
 
