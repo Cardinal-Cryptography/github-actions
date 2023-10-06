@@ -4,7 +4,7 @@
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": ":exclamation: *Failed to merge upstream __UPSTREAM__ to __TARGET__*"
+				"text": ":exclamation: *Failed to merge upstream __UPSTREAM__ to __TARGET__* (pull request: <__PULL_REQUEST_URL__|#__PULL_REQUEST_NUMBER__>)"
 			},
 			"accessory": {
 				"type": "button",
@@ -15,23 +15,6 @@
 				},
 				"value": "click_me_123",
 				"url": "__RUN_URL__"
-			}
-		},
-		{
-			"type": "section",
-			"text": {
-				"type": "mrkdwn",
-				"text": ":exclamation: *Pull request number __PULL_REQUEST_NUMBER__ has been created*"
-			},
-			"accessory": {
-				"type": "button",
-				"text": {
-					"type": "plain_text",
-					"text": ":mag:",
-					"emoji": true
-				},
-				"value": "click_me_1234",
-				"url": "__PULL_REQUEST_URL__"
 			}
 		}
 	]
