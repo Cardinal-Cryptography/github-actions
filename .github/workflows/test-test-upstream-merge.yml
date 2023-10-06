@@ -30,6 +30,30 @@ jobs:
           git-commit-email: ${{ secrets.AUTOCOMMIT_EMAIL }}
           gh-ci-token: ${{ secrets.TEST_UPSTREAM_MERGE_GH_TOKEN }}
 
+      - name: Run no changes test
+        uses: ./test-upstream-merge
+        with:
+          target-repo: ForthcomingSystems/test-repo1-fork-nochanges
+          target-branch: main
+          upstream-repo-url: https://github.com/MikolajGasior/test-repo1
+          upstream-branch: main
+          slack-webhook-url: ${{ secrets.SLACK_INCOMING_WEBHOOK_TEMP_SLACK_NOTIFICATIONS }}
+          git-commit-author: ${{ secrets.AUTOCOMMIT_AUTHOR }}
+          git-commit-email: ${{ secrets.AUTOCOMMIT_EMAIL }}
+          gh-ci-token: ${{ secrets.TEST_UPSTREAM_MERGE_GH_TOKEN }}
+
+      - name: Run success test
+        uses: ./test-upstream-merge
+        with:
+          target-repo: ForthcomingSystems/test-repo1-fork-success
+          target-branch: main
+          upstream-repo-url: https://github.com/MikolajGasior/test-repo1
+          upstream-branch: main
+          slack-webhook-url: ${{ secrets.SLACK_INCOMING_WEBHOOK_TEMP_SLACK_NOTIFICATIONS }}
+          git-commit-author: ${{ secrets.AUTOCOMMIT_AUTHOR }}
+          git-commit-email: ${{ secrets.AUTOCOMMIT_EMAIL }}
+          gh-ci-token: ${{ secrets.TEST_UPSTREAM_MERGE_GH_TOKEN }}
+
       #- name: Run success test
       #  uses: ./test-upstream-merge
       #  with:

@@ -192,7 +192,7 @@ runs:
           merge_failed=1
         fi
 
-        echo "merge-failed=0" >> $GITHUB_OUTPUT
+        echo "merge-failed=${merge_failed}" >> $GITHUB_OUTPUT
 
     - name: Send notification
       shell: bash
