@@ -116,21 +116,21 @@ runs:
         # Create a pull request
         pr_title="Merge upstream from ${{ steps.get-repository-name.outputs.repository-name }}@${{ inputs.upstream-branch }} (${{ steps.get-upstream-sha.outputs.sha }})"
         cat >pr_body.txt <<EOF
-# Merge upstream
-## Upstream details
+        # Merge upstream
+        ## Upstream details
 
-- Repository URL: ${{ inputs.upstream-repo-url }}
-- Repository name: ${{ steps.get-repository-name.outputs.repository-name }}
-- Branch: ${{ inputs.upstream-branch }}
-- Commit SHA: ${{ steps.get-upstream-sha.outputs.sha }}
+        - Repository URL: ${{ inputs.upstream-repo-url }}
+        - Repository name: ${{ steps.get-repository-name.outputs.repository-name }}
+        - Branch: ${{ inputs.upstream-branch }}
+        - Commit SHA: ${{ steps.get-upstream-sha.outputs.sha }}
 
-## Target details
+        ## Target details
 
-- Repository: ${{ inputs.target-repo }}
-- Branch: ${{ inputs.target-branch }}
-- Recent common ancestor with upstream: ${merge_base}
+        - Repository: ${{ inputs.target-repo }}
+        - Branch: ${{ inputs.target-branch }}
+        - Recent common ancestor with upstream: ${merge_base}
 
-EOF
+        EOF
         pr_body=$(cat pr_body.txt | tr '\n' '\\n')
         
         data="{\"title\":\"${pr_title}\",\"body\":\"${pr_body}\",\"head\":\"${pr_branch}\",\"base\":\"${{ inputs.target-branch }}\"}"
