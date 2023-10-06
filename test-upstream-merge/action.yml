@@ -73,18 +73,23 @@ runs:
         echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
     - name: Remove existing upstream merge branch if nothing to do
-      if: ${{ steps.get-upstream-sha.outputs.sha == steps.get-target-sha.outputs.sha }}
       shell: bash
       run: |
-        echo "Nothing to do, removing existing auto merge branch"
-        set +e
-        git push origin :${pr_branch}
-        set -e
+        if [[ "${{ steps.get-upstream-sha.outputs.sha }}" == "${{ steps.get-target-sha.outputs.sha }}" ]]; then
+          echo "SHA are identical.  There is nothing to do.  Removing existing auto merge branch..."
+          set +e
+          git push origin :${pr_branch}
+          set -e
+        fi
 
     - name: Add upstream
-      if: ${{ steps.get-upstream-sha.outputs.sha != steps.get-target-sha.outputs.sha }}
       shell: bash
       run: |
+        if [[ "${{ steps.get-upstream-sha.outputs.sha }}" == "${{ steps.get-target-sha.outputs.sha }}" ]]; then
+          echo "SHA are identical.  There is nothing to do."
+          exit 0
+        fi
+
         cd target
         git remote add upstream ${{ inputs.upstream-repo-url }}
         git fetch upstream
@@ -92,11 +97,15 @@ runs:
         git remote show upstream
 
     - name: Merge upstream
-      if: ${{ steps.get-upstream-sha.outputs.sha != steps.get-target-sha.outputs.sha }}
       shell: bash
       id: create-pull-request
       # yamllint enable rule:line-length
       run: |
+        if [[ "${{ steps.get-upstream-sha.outputs.sha }}" == "${{ steps.get-target-sha.outputs.sha }}" ]]; then
+          echo "SHA are identical.  There is nothing to do."
+          exit 0
+        fi
+
         cd target
         git config user.name "${{ inputs.git-commit-author }}"
         git config user.email "${{ inputs.git-commit-author }}"
@@ -165,10 +174,14 @@ runs:
       # yamllint disable rule:line-length
 
     - name: Check for conflicts
-      if: ${{ steps.get-upstream-sha.outputs.sha != steps.get-target-sha.outputs.sha }}
       shell: bash
       id: merge-upstream
       run: |
+        if [[ "${{ steps.get-upstream-sha.outputs.sha }}" == "${{ steps.get-target-sha.outputs.sha }}" ]]; then
+          echo "SHA are identical.  There is nothing to do."
+          exit 0
+        fi
+
         cd target
         git checkout "${{ inputs.target-branch }}"
 
@@ -182,10 +195,14 @@ runs:
         echo "merge-failed=0" >> $GITHUB_OUTPUT
 
     - name: Send notification
-      if: ${{ steps.get-upstream-sha.outputs.sha != steps.get-target-sha.outputs.sha }}
       shell: bash
       if: ${{ inputs.slack-webhook-url != '' }}
       run: |
+        if [[ "${{ steps.get-upstream-sha.outputs.sha }}" == "${{ steps.get-target-sha.outputs.sha }}" ]]; 
+          echo "SHA are identical.  There is nothing to do."
+          exit 0
+        fi
+
         run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         target="${{ inputs.target-repo }}/${{ inputs.target-branch }}"
         upstream="${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}"
