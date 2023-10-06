@@ -97,7 +97,7 @@ runs:
         # Remove existing branch
         set +e
         git push origin :${pr_branch}
-        sleep 10 # Let's give GitHub some time to close the existing pull request
+        sleep 5 # Let's give GitHub some time to close the existing pull request
         set -e
 
         # Checkout last common ancestor
@@ -110,11 +110,14 @@ runs:
         git merge upstream/${{ inputs.upstream-branch }}
         git push origin "${pr_branch}"
 
+        # Wait a while to give GitHub action process things before we send another payload
+        sleep 5
+
         # Create a pull request
         pr_title="Merge upstream from ${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}"
         pr_body="Merging upstream from ${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }} which is at ${merge_base}"
         repo_name=$(echo "${{ inputs.target-repo }}" | cut -d/ -f2)
-        data="{\"title\":\"${pr_title}\",\"body\":\"${pr_body}\",\"head\":\"${repo_name}:${pr_branch}\",\"base\":\"${{ inputs.target-branch }}\"}"
+        data="{\"title\":\"${pr_title}\",\"body\":\"${pr_body}\",\"head\":\"${pr_branch}\",\"base\":\"${{ inputs.target-branch }}\"}"
         echo ${data}
         curl -vvv -L \
           -X POST \
@@ -125,7 +128,7 @@ runs:
           -d "${data}"
 
         # Wait a while to give GitHub action process things before we send another payload
-        sleep 10
+        sleep 5
 
         #echo "merge-failed=0" >> $GITHUB_OUTPUT
       # yamllint disable rule:line-length
