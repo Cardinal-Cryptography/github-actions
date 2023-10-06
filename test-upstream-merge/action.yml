@@ -131,7 +131,7 @@ runs:
         - Recent common ancestor with upstream: ${merge_base}
 
         EOF
-        pr_body=$(cat pr_body.txt | tr '\n' '\\n')
+        pr_body=$(cat pr_body.txt | tr '\n' '%' | sed 's|%|\\n|g')
         
         data="{\"title\":\"${pr_title}\",\"body\":\"${pr_body}\",\"head\":\"${pr_branch}\",\"base\":\"${{ inputs.target-branch }}\"}"
 
