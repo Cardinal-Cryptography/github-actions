@@ -56,11 +56,18 @@ runs:
         fetch-depth: 0
         token: ${{ inputs.gh-ci-token }}
 
-    - name: Show latest commits
+    - name: Show target latest commits
       shell: bash
       run: |
         cd target
         git log -n 5
+
+    - name: Get upstream last commit SHA
+      shell: bash
+      id: get-upstream-sha
+      run: |
+        cd upstream
+        echo "upstream-sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
     - name: Add upstream
       shell: bash
@@ -71,36 +78,27 @@ runs:
         git remote -v
         git remote show upstream
 
-        echo "merge-base"
-        git merge-base ${{ inputs.target-branch }} upstream/${{ inputs.upstream-branch }}
-        echo "merge-base"
-
     - name: Merge upstream
       shell: bash
       id: merge-upstream
+      # yamllint enable rule:line-length
       run: |
         cd target
         git config user.name "${{ inputs.git-commit-author }}"
         git config user.email "${{ inputs.git-commit-author }}"
 
         pr_branch="upstreambot-merge-upstream"
+        merge_base=$(merge-base "${{ inputs.target-branch }}" "upstream/${{ inputs.upstream-branch }}")
 
         # Removing existing branch, feel free to remove that step
         set +e
         git push origin :${pr_branch}
         set -e
+        git checkout "${merge_base}"
         git checkout -b "${pr_branch}"
-
-        set +e
-        merge_failed=0
         git merge upstream/${{ inputs.upstream-branch }}
-        if [[ $? != 0 ]]; then
-          merge_failed=1
-        fi
-
-        set -e
         git add .
-        git commit -m "Merge upstream from ${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}"
+        git commit -m "Merge upstream from ${{ steps.get-repository-name.outputs.repository-name }}@${{ inputs.upstream-branch }}:${{ steps.get-upstream-sha.outputs.sha }}"
         git push origin "${pr_branch}"
 
         pr_body="Merging upstream from ${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}"
@@ -115,22 +113,23 @@ runs:
           https://api.github.com/repos/${{ inputs.target-repo }}/pulls \
           -d "${data}"
 
-        echo "merge-failed=${merge_failed}" >> $GITHUB_OUTPUT
+        echo "merge-failed=0" >> $GITHUB_OUTPUT
+      # yamllint disable rule:line-length
 
-    - name: Send notification
-      shell: bash
-      if: ${{ inputs.slack-webhook-url != '' }}
-      run: |
-        run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-        target="${{ inputs.target-repo }}/${{ inputs.target-branch }}"
-        upstream="${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}"
-        if [[ "${{ steps.merge-upstream.outputs.merge-failed }}" == "1" ]]; then
-          cat ${{ github.action_path }}/slack-msg-failure.json > tmp-slack-msg.json
-        else
-          cat ${{ github.action_path }}/slack-msg-success.json > tmp-slack-msg.json
-        fi
-        sed -i "s|__RUN_URL__|${run_url}|g" tmp-slack-msg.json
-        sed -i "s|__TARGET__|${target}|g" tmp-slack-msg.json
-        sed -i "s|__UPSTREAM__|${upstream}|g" tmp-slack-msg.json
-        
-        curl -X POST -d @tmp-slack-msg.json "${{ inputs.slack-webhook-url }}"
+    # - name: Send notification
+    #   shell: bash
+    #   if: ${{ inputs.slack-webhook-url != '' }}
+    #   run: |
+    #     run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+    #     target="${{ inputs.target-repo }}/${{ inputs.target-branch }}"
+    #     upstream="${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}"
+    #     if [[ "${{ steps.merge-upstream.outputs.merge-failed }}" == "1" ]]; then
+    #       cat ${{ github.action_path }}/slack-msg-failure.json > tmp-slack-msg.json
+    #     else
+    #       cat ${{ github.action_path }}/slack-msg-success.json > tmp-slack-msg.json
+    #     fi
+    #     sed -i "s|__RUN_URL__|${run_url}|g" tmp-slack-msg.json
+    #     sed -i "s|__TARGET__|${target}|g" tmp-slack-msg.json
+    #     sed -i "s|__UPSTREAM__|${upstream}|g" tmp-slack-msg.json
+    #     
+    #     curl -X POST -d @tmp-slack-msg.json "${{ inputs.slack-webhook-url }}"
