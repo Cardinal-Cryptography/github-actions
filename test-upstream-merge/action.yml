@@ -96,8 +96,9 @@ runs:
         set -e
         git checkout "${merge_base}"
         git log -n 2
-        git switch -c "${pr_branch}"
+        git checkout -b "${pr_branch}"
         git merge upstream/${{ inputs.upstream-branch }}
+        git branch -u origin/${{ inputs.target-branch }}
         git status
         git log -n 3
         git add .
