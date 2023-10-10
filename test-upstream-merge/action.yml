@@ -41,6 +41,12 @@ runs:
         fetch-depth: 0
         token: ${{ inputs.gh-ci-token }}
 
+    - name: Set PR branch
+      id: get-pr-branch
+      shell: bash
+      run: |
+        echo "pr-branch=a0-ops-upstream-automerge" >> $GITHUB_OUTPUT
+
     - name: Get upstream repository name from URL
       shell: bash
       id: get-repository-name
@@ -92,7 +98,7 @@ runs:
         if [[ "${{ steps.check-if-merge-needed.outputs.merge }}" != "yes" ]]; then
           echo "Upstream SHA is an ancestor of target branch.  There is nothing to do.  Removing existing auto merge branch..."
           set +e
-          git push origin :${pr_branch}
+          git push origin :${{ steps.get-pr-branch.outputs.pr-branch }}
           set -e
         fi
 
@@ -125,7 +131,7 @@ runs:
         git config user.email "${{ inputs.git-commit-author }}"
 
         # Name of PR branch
-        pr_branch="a0-ops-upstream-automerge"
+        pr_branch="${{ steps.get-pr-branch.outputs.pr-branch }}"
 
         # Get latest common ancestor
         merge_base=$(git merge-base "${{ inputs.target-branch }}" "upstream/${{ inputs.upstream-branch }}")
