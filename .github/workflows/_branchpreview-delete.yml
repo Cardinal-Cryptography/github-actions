@@ -15,7 +15,6 @@ on:
 
 jobs:
   check-vars-and-secrets:
-    needs: [validate-inputs]
     name: Check vars and secrets
     uses: ./.github/workflows/_check-vars-and-secrets.yml
     secrets: inherit
