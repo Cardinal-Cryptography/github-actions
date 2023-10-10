@@ -1,0 +1,39 @@
+---
+name: BR - Delete
+
+on:
+  workflow_call:
+    inputs:
+      repository-name:
+        description: Repository name
+        required: true
+        type: string
+      branch-name:
+        description: Branch name
+        required: true
+        type: string
+
+jobs:
+  check-vars-and-secrets:
+    needs: [validate-inputs]
+    name: Check vars and secrets
+    uses: ./.github/workflows/_check-vars-and-secrets.yml
+    secrets: inherit
+
+  delete-branchpreview:
+    needs: [check-vars-and-secrets]
+    name: Delete branchpreview
+    runs-on: [self-hosted, Linux, X64, small]
+    steps:
+      - name: Delete branchpreview
+        uses: Cardinal-Cryptography/github-actions/delete-branchpreview@v3
+        with:
+          repository-name: ${{ inputs.repository-name }}
+          branch-name: ${{ inputs.branch-name }}
+          gh-ci-token: ${{ secrets.CI_GH_TOKEN }}
+          repo-branchpreviews-name: ${{ secrets.REPO_OPS_BRANCHPREVIEWS_NAME }}
+          repo-branchpreview-templates-name: ${{ secrets.REPO_BRANCHPREVIEW_TEMPLATES_NAME }}
+          argo-host: ${{ secrets.ARGOCD_DEVNET_HOST }}
+          argo-sync-user-token: ${{ secrets.ARGO_SYNC_USER_TOKEN }}
+          git-commit-author: ${{ secrets.AUTOCOMMIT_AUTHOR }}
+          git-commit-email: ${{ secrets.AUTOCOMMIT_EMAIL }}
