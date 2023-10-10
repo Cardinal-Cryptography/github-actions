@@ -13,7 +13,11 @@ on:
         required: true
         type: string
       image:
-        description: Full docker image, eg. registry/repo:tag
+        description: Docker image, in format of repo:tag
+        required: true
+        type: string
+      registry-host:
+        description: "Choose from 'private' or 'public'"
         required: true
         type: string
 
@@ -33,7 +37,7 @@ jobs:
         with:
           repository-name: ${{ inputs.repository-name }}
           branch-name: ${{ inputs.branch-name }}
-          image: ${{ inputs.image }}
+          image: ${{ inputs.registry-host == 'private' && secrets.ECR_PRIVATE_HOST || vars.ECR_PUBLIC_HOST }}/${{ inputs.image }}
           gh-ci-token: ${{ secrets.CI_GH_TOKEN }}
           repo-branchpreviews-name: ${{ secrets.REPO_OPS_BRANCHPREVIEWS_NAME }}
           repo-branchpreview-templates-name: ${{ secrets.REPO_BRANCHPREVIEW_TEMPLATES_NAME }}
