@@ -13,15 +13,15 @@ runs:
       shell: bash
       run: |
         if [[ -f .yamllint ]]; then
-          echo "file-path=.yamllint" >> $GITHUB_OUTPUT
+          echo 'file-path=.yamllint' >> $GITHUB_OUTPUT
         else
-          echo "file-path=${{ github.action_path }}/.yamllint" >> $GITHUB_OUTPUT
+          echo 'file-path=${{ github.action_path }}/.yamllint' >> $GITHUB_OUTPUT
         fi
 
     - name: Show .yamllint location
       shell: bash
       run: |
-        echo "Found .yamllint in ${{ steps.file-location.outputs.file-path }}"
+        echo 'Found .yamllint in ${{ steps.file-location.outputs.file-path }}'
 
     - name: LINT | Execute yaml-lint
       uses: ibiqlik/action-yamllint@v3.1.1

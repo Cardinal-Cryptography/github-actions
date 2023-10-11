@@ -29,16 +29,16 @@ runs:
       shell: bash
       run: |
         if [[
-          "${{ inputs.compression }}" == "true" && \
-          "${{ inputs.source-filename }}" == "${{ inputs.s3-bucket-filename }}"
+          '${{ inputs.compression }}' == 'true' && \
+          '${{ inputs.source-filename }}' == '${{ inputs.s3-bucket-filename }}'
         ]]; then
           echo "!!! When compression is 'true', source file cannot have the same"
           echo "!!! name as compressed file uploaded to S3 bucket."
           exit 1
         fi
         if [[
-          "${{ inputs.compression }}" == "true" && \
-          "${{ inputs.source-filename }}" =~ ^.*\.(tar\.gz|tgz)$
+          '${{ inputs.compression }}' == 'true' && \
+          '${{ inputs.source-filename }}' =~ ^.*\.(tar\.gz|tgz)$
         ]]; then
           echo "! "
           echo "! Source file has .tar.gz or .tgz extension so it seems to be compressed already."
@@ -47,8 +47,8 @@ runs:
           echo "! "
         fi
         if [[
-          "${{ inputs.compression }}" == "true" && \
-          ! "${{ inputs.s3-bucket-filename }}" =~ ^.*\.(tar\.gz|tgz)$
+          '${{ inputs.compression }}' == 'true' && \
+          ! '${{ inputs.s3-bucket-filename }}' =~ ^.*\.(tar\.gz|tgz)$
         ]]; then
           echo "! "
           echo "! File is going to be compressed but its file extension will not be"
@@ -56,9 +56,9 @@ runs:
           echo "! "
         fi
         if [[
-          "${{ inputs.compression }}" == "false" && \
-          ! "${{ inputs.source-filename }}" =~ ^.*\.(tar\.gz|tgz)$ && \
-          "${{ inputs.s3-bucket-filename }}" =~ ^.*\.(tar\.gz|tgz)$
+          '${{ inputs.compression }}' == 'false' && \
+          ! '${{ inputs.source-filename }}' =~ ^.*\.(tar\.gz|tgz)$ && \
+          '${{ inputs.s3-bucket-filename }}' =~ ^.*\.(tar\.gz|tgz)$
         ]]; then
           echo "! "
           echo "! File is not going to be compressed but its file extension suggests"
@@ -71,16 +71,16 @@ runs:
           --key '${{ inputs.s3-bucket-path }}/${{ inputs.s3-bucket-filename }}' \
           2> /dev/null || not_exist=true
         if [[ "${not_exist}" ]]; then
-          target_s3_filepath=${{ inputs.s3-bucket-path }}/${{ inputs.s3-bucket-filename }}
-          if [[ "${{ inputs.compression}}" == "true" ]]; then
-            tar -cvzf ${{ inputs.s3-bucket-filename }} -C ${{ inputs.source-path }} \
-              ${{ inputs.source-filename }}
-            aws s3 cp ${{ inputs.s3-bucket-filename }} \
+          target_s3_filepath='${{ inputs.s3-bucket-path }}/${{ inputs.s3-bucket-filename }}'
+          if [[ '${{ inputs.compression}}' == 'true' ]]; then
+            tar -cvzf '${{ inputs.s3-bucket-filename }}' -C '${{ inputs.source-path }}' \
+              '${{ inputs.source-filename }}'
+            aws s3 cp '${{ inputs.s3-bucket-filename }}' \
               s3://${{ inputs.s3-bucket-name }}/"${target_s3_filepath}"
           else
-            aws s3 cp ${{ inputs.source-path }} \
+            aws s3 cp '${{ inputs.source-path }}' \
               s3://${{ inputs.s3-bucket-name }}/"${target_s3_filepath}"
           fi
         else
-          echo "File ${{ inputs.s3-bucket-filename }} already exists on S3 bucket."
+          echo 'File ${{ inputs.s3-bucket-filename }} already exists on S3 bucket.'
         fi

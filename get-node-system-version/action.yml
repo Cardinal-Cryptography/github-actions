@@ -17,7 +17,7 @@ runs:
     - name: Validate action inputs
       shell: bash
       run: |
-        if [[ ${{ inputs.env }} != 'testnet' && ${{ inputs.env }} != 'mainnet' ]]; then
+        if [[ '${{ inputs.env }}' != 'testnet' && '${{ inputs.env }}' != 'mainnet' ]]; then
           echo "Error: inputs.env should be either mainnet or testnet!"
           exit 1
         fi
@@ -29,7 +29,7 @@ runs:
       run: |
         COMMIT_ID=$(curl -s -H "Content-Type: application/json" \
           -d '{"id":1, "jsonrpc":"2.0", "method": "system_version"}' \
-          "${{ inputs.env == 'mainnet' && 'https://rpc.azero.dev' || 'https://rpc.test.azero.dev' }}" \
+          '${{ inputs.env == 'mainnet' && 'https://rpc.azero.dev' || 'https://rpc.test.azero.dev' }}' \
           | jq -r '.result' | cut -d "-" -f 2 | head -c 7)
         echo "sha=$COMMIT_ID" >> $GITHUB_OUTPUT
       # yamllint enable rule:line-length

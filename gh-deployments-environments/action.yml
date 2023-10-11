@@ -46,7 +46,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
-        ${{ github.action_path }}/helper.sh create-deployment "${{ inputs.owner }}" "${{ inputs.repo }}" "${{ inputs.env }}" "${{ inputs.ref }}" "deployment-id.txt"
+        ${{ github.action_path }}/helper.sh create-deployment '${{ inputs.owner }}' '${{ inputs.repo }}' '${{ inputs.env }}' '${{ inputs.ref }}' 'deployment-id.txt'
 
         deployment_id=$(cat deployment-id.txt)
         if [[ "${deployment_id}" =~ ^[0-9]{1,32}$ ]]; then
@@ -64,7 +64,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
-        ${{ github.action_path }}/helper.sh create-deployment-status "${{ inputs.owner }}" "${{ inputs.repo }}" "${{ inputs.deployment-id }}" "${{ inputs.status }}"
+        ${{ github.action_path }}/helper.sh create-deployment-status '${{ inputs.owner }}' '${{ inputs.repo }}' '${{ inputs.deployment-id }}' '${{ inputs.status }}'
 
     - name: Delete environment
       id: delete-environment
@@ -73,4 +73,4 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
-        ${{ github.action_path }}/helper.sh delete-environment "${{ inputs.owner }}" "${{ inputs.repo }}" "${{ inputs.env }}"
+        ${{ github.action_path }}/helper.sh delete-environment '${{ inputs.owner }}' '${{ inputs.repo }}' '${{ inputs.env }}'
