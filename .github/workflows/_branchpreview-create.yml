@@ -40,7 +40,7 @@ jobs:
     steps:
       - name: Create branchpreview
         id: create-branchpreview
-        uses: Cardinal-Cryptography/github-actions/create-branchpreview@A0-3296-make-branchpreview-create-return-all-outputs
+        uses: Cardinal-Cryptography/github-actions/create-branchpreview@v3
         with:
           repository-name: ${{ inputs.repository-name }}
           branch-name: ${{ inputs.branch-name }}
