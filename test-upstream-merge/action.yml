@@ -1,0 +1,242 @@
+---
+name: Test upstream merge
+description: |
+  Adds upstream and tries to merge it
+inputs:
+  target-repo:
+    description: Repository to merge to, in format 'owner/repo'
+    required: true
+  target-branch:
+    description: Branch to merge to
+    required: true
+  upstream-repo-url:
+    description: Upstream repository URL to merge from, eg. https://github.com/owner/repo
+    required: true
+  upstream-branch:
+    description: Upstream branch to merge from
+    required: true
+  git-commit-author:
+    description: 'Git commit author when pushing to target repository'
+    required: true
+  git-commit-email:
+    description: 'Git commit email when pushing to target repository'
+    required: true
+  gh-ci-token:
+    description: 'GH token to be used in the action'
+    required: true
+  slack-webhook-url:
+    description: Slack webhook URL
+    required: false
+    default: ''
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout target repository
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.target-repo }}
+        ref: ${{ inputs.target-branch }}
+        path: target
+        fetch-depth: 0
+        token: ${{ inputs.gh-ci-token }}
+
+    - name: Set PR branch
+      id: get-pr-branch
+      shell: bash
+      run: |
+        echo "pr-branch=a0-ops-upstream-automerge" >> $GITHUB_OUTPUT
+
+    - name: Get upstream repository name from URL
+      shell: bash
+      id: get-repository-name
+      run: |
+        echo "repository-name=$(echo '${{ inputs.upstream-repo-url }}' | sed 's|https://github.com/||g')" >> $GITHUB_OUTPUT
+
+    - name: Checkout upstream repository
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ steps.get-repository-name.outputs.repository-name }}
+        ref: ${{ inputs.upstream-branch }}
+        path: upstream
+        fetch-depth: 1
+        token: ${{ inputs.gh-ci-token }}
+
+    - name: Get target last commit SHA
+      shell: bash
+      id: get-target-sha
+      run: |
+        cd target
+        git log -n 3
+        echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+    - name: Get upstream last commit SHA
+      shell: bash
+      id: get-upstream-sha
+      run: |
+        cd upstream
+        git log -n 3
+        echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+    - name: Check if merge is needed
+      shell: bash
+      id: check-if-merge-needed
+      run: |
+        cd target
+        set +e
+        merge_needed="no"
+        git merge-base --is-ancestor "${{ steps.get-upstream-sha.outputs.sha }}" HEAD
+        if [[ $? != 0 ]]; then
+          merge_needed="yes"
+        fi
+        set -e
+        echo "merge=${merge_needed}" >> $GITHUB_OUTPUT
+
+    - name: Remove existing upstream merge branch if nothing to do
+      shell: bash
+      run: |
+        if [[ "${{ steps.check-if-merge-needed.outputs.merge }}" != "yes" ]]; then
+          echo "Upstream SHA is an ancestor of target branch.  There is nothing to do.  Removing existing auto merge branch..."
+          set +e
+          git push origin :${{ steps.get-pr-branch.outputs.pr-branch }}
+          set -e
+        fi
+
+    - name: Add upstream
+      shell: bash
+      run: |
+        if [[ "${{ steps.check-if-merge-needed.outputs.merge }}" != "yes" ]]; then
+          echo "There is nothing to do."
+          exit 0
+        fi
+
+        cd target
+        git remote add upstream ${{ inputs.upstream-repo-url }}
+        git fetch upstream
+        git remote -v
+        git remote show upstream
+
+    - name: Merge upstream
+      shell: bash
+      id: create-pull-request
+      # yamllint enable rule:line-length
+      run: |
+        if [[ "${{ steps.check-if-merge-needed.outputs.merge }}" != "yes" ]]; then
+          echo "There is nothing to do."
+          exit 0
+        fi
+
+        cd target
+        git config user.name "${{ inputs.git-commit-author }}"
+        git config user.email "${{ inputs.git-commit-author }}"
+
+        # Name of PR branch
+        pr_branch="${{ steps.get-pr-branch.outputs.pr-branch }}"
+
+        # Get latest common ancestor
+        merge_base=$(git merge-base "${{ inputs.target-branch }}" "upstream/${{ inputs.upstream-branch }}")
+
+        # Remove existing branch
+        set +e
+        git push origin :${pr_branch}
+        sleep 5 # Let's give GitHub some time to close the existing pull request
+        set -e
+
+        # Checkout last common ancestor
+        git checkout "${merge_base}"
+
+        # Create a new branch for PR with the merged upstream
+        git checkout -b "${pr_branch}"
+
+        # Merge and push the upstream branch
+        git merge upstream/${{ inputs.upstream-branch }}
+        git push origin "${pr_branch}"
+
+        # Wait a while to give GitHub action process things before we send another payload
+        sleep 5
+
+        # Create a pull request
+        pr_title="Merge upstream from ${{ steps.get-repository-name.outputs.repository-name }}@${{ inputs.upstream-branch }} (${{ steps.get-upstream-sha.outputs.sha }})"
+        cat >pr_body.txt <<EOF
+        # Merge upstream
+        ## Upstream details
+
+        - Repository URL: ${{ inputs.upstream-repo-url }}
+        - Repository name: ${{ steps.get-repository-name.outputs.repository-name }}
+        - Branch: ${{ inputs.upstream-branch }}
+        - Commit SHA: ${{ steps.get-upstream-sha.outputs.sha }}
+
+        ## Target details
+
+        - Repository: ${{ inputs.target-repo }}
+        - Branch: ${{ inputs.target-branch }}
+        - Recent common ancestor with upstream: ${merge_base}
+
+        EOF
+        pr_body=$(cat pr_body.txt | tr '\n' '%' | sed 's|%|\\n|g')
+        
+        data="{\"title\":\"${pr_title}\",\"body\":\"${pr_body}\",\"head\":\"${pr_branch}\",\"base\":\"${{ inputs.target-branch }}\"}"
+
+        curl -L \
+          -X POST \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ inputs.gh-ci-token }}" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://api.github.com/repos/${{ inputs.target-repo }}/pulls \
+          -d "${data}" > tmp-curl-output.txt
+
+        # Wait a while to give GitHub action process things before we send another payload
+        sleep 5
+
+        # Set outputs for further steps
+        echo "pull-request-number=$(cat tmp-curl-output.txt | jq '.number')" >> $GITHUB_OUTPUT
+        echo "pull-request-url=$(cat tmp-curl-output.txt | jq '.html_url')" >> $GITHUB_OUTPUT
+      # yamllint disable rule:line-length
+
+    - name: Check for conflicts
+      shell: bash
+      id: merge-upstream
+      run: |
+        if [[ "${{ steps.check-if-merge-needed.outputs.merge }}" != "yes" ]]; then
+          echo "There is nothing to do."
+          exit 0
+        fi
+
+        cd target
+        git checkout "${{ inputs.target-branch }}"
+
+        set +e
+        merge_failed=0
+        git merge upstream/${{ inputs.upstream-branch }}
+        if [[ $? != 0 ]]; then
+          merge_failed=1
+        fi
+
+        echo "merge-failed=${merge_failed}" >> $GITHUB_OUTPUT
+
+    - name: Send notification
+      shell: bash
+      if: ${{ inputs.slack-webhook-url != '' }}
+      run: |
+        if [[ "${{ steps.check-if-merge-needed.outputs.merge }}" != "yes" ]]; then
+          echo "There is nothing to do."
+          exit 0
+        fi
+
+        run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        target="${{ inputs.target-repo }}/${{ inputs.target-branch }}"
+        upstream="${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}"
+        pull_request_number="${{ steps.create-pull-request.outputs.pull-request-number }}"
+        pull_request_url="${{ steps.create-pull-request.outputs.pull-request-url }}"
+        if [[ "${{ steps.merge-upstream.outputs.merge-failed }}" == "1" ]]; then
+          cat ${{ github.action_path }}/slack-msg-failure.json > tmp-slack-msg.json
+        else
+          cat ${{ github.action_path }}/slack-msg-success.json > tmp-slack-msg.json
+        fi
+        sed -i "s|__RUN_URL__|${run_url}|g" tmp-slack-msg.json
+        sed -i "s|__TARGET__|${target}|g" tmp-slack-msg.json
+        sed -i "s|__UPSTREAM__|${upstream}|g" tmp-slack-msg.json
+        sed -i "s|__PULL_REQUEST_NUMBER__|${pull_request_number}|g" tmp-slack-msg.json
+        sed -i "s|__PULL_REQUEST_URL__|${pull_request_url}|g" tmp-slack-msg.json
+        
+        curl -X POST -d @tmp-slack-msg.json "${{ inputs.slack-webhook-url }}"
