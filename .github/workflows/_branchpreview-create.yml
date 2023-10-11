@@ -37,6 +37,7 @@ jobs:
         with:
           repository-name: ${{ inputs.repository-name }}
           branch-name: ${{ inputs.branch-name }}
+          # yamllint disable-line rule:line-length
           image: ${{ inputs.registry-host == 'private' && secrets.ECR_PRIVATE_HOST || vars.ECR_PUBLIC_HOST }}/${{ inputs.image }}
           gh-ci-token: ${{ secrets.CI_GH_TOKEN }}
           repo-branchpreviews-name: ${{ secrets.REPO_OPS_BRANCHPREVIEWS_NAME }}
