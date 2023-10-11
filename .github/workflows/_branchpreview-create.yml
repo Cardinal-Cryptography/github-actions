@@ -20,6 +20,10 @@ on:
         description: "Choose from 'private' or 'public'"
         required: true
         type: string
+    outputs:
+      base64:
+        description: Outputs encoded with base64
+        value: ${{ jobs.create-branchpreview.outputs.base64 }}
 
 jobs:
   check-vars-and-secrets:
@@ -31,9 +35,12 @@ jobs:
     needs: [check-vars-and-secrets]
     name: Create branchpreview
     runs-on: [self-hosted, Linux, X64, small]
+    outputs:
+      base64: ${{ steps.create-branchpreview.outputs.base64 }}
     steps:
       - name: Create branchpreview
-        uses: Cardinal-Cryptography/github-actions/create-branchpreview@v3
+        id: create-branchpreview
+        uses: Cardinal-Cryptography/github-actions/create-branchpreview@A0-3296-make-branchpreview-create-return-all-outputs
         with:
           repository-name: ${{ inputs.repository-name }}
           branch-name: ${{ inputs.branch-name }}
@@ -46,4 +53,4 @@ jobs:
           argo-sync-user-token: ${{ secrets.ARGO_SYNC_USER_TOKEN }}
           git-commit-author: ${{ secrets.AUTOCOMMIT_AUTHOR }}
           git-commit-email: ${{ secrets.AUTOCOMMIT_EMAIL }}
-          hard-refresh: "true"
+          hard-refresh: 'true'
