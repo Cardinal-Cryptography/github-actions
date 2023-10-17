@@ -38,18 +38,18 @@ runs:
       shell: bash
       run: |
         if [[
-          ! "${{ inputs.repository-name }}" =~ ^[a-zA-Z0-9-]+$
+          ! '${{ inputs.repository-name }}' =~ ^[a-zA-Z0-9-]+$
         ]]
         then
-          echo "!!! Invalid repository name"
+          echo '!!! Invalid repository name'
           exit 1
         fi
 
         if [[
-          ! "${{ inputs.branch-name }}" =~ ^[a-zA-Z0-9/_-]+$
+          ! '${{ inputs.branch-name }}' =~ ^[a-zA-Z0-9/_-]+$
         ]]
         then
-          echo "!!! Invalid branch name"
+          echo '!!! Invalid branch name'
           exit 1
         fi
 
@@ -58,7 +58,7 @@ runs:
       with:
         repository: Cardinal-Cryptography/${{ inputs.repo-branchpreviews-name }}
         token: ${{ inputs.gh-ci-token }}
-        path: "${{ inputs.repo-branchpreviews-name }}"
+        path: '${{ inputs.repo-branchpreviews-name }}'
         ref: main
 
     - name: Checkout branchpreview templates repo
@@ -66,7 +66,7 @@ runs:
       with:
         repository: Cardinal-Cryptography/${{ inputs.repo-branchpreview-templates-name }}
         token: ${{ inputs.gh-ci-token }}
-        path: "${{ inputs.repo-branchpreview-templates-name }}"
+        path: '${{ inputs.repo-branchpreview-templates-name }}'
         ref: compatibility
 
     - name: Destroy branchpreview
@@ -74,19 +74,19 @@ runs:
       env:
         OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-branchpreviews-name }}
       run: |
-        cd "${{ inputs.repo-branchpreview-templates-name }}"
+        cd '${{ inputs.repo-branchpreview-templates-name }}'
         ./Ops.sh delete-branchpreview \
-          "${{ inputs.repository-name }}" \
-          "${{ inputs.branch-name }}"
+          '${{ inputs.repository-name }}' \
+          '${{ inputs.branch-name }}'
 
     - name: Commit deletion of the branchpreview
       uses: EndBug/add-and-commit@v9.1.1
       with:
-        author_name: "${{ inputs.git-commit-author }}"
-        author_email: "${{ inputs.git-commit-email }}"
-        message: "Delete branchpreview ${{ inputs.repository-name }}:${{ inputs.branch-name }}"
+        author_name: '${{ inputs.git-commit-author }}'
+        author_email: '${{ inputs.git-commit-email }}'
+        message: 'Delete branchpreview ${{ inputs.repository-name }}:${{ inputs.branch-name }}'
         add: '["*.yaml","*.txt"]'
-        cwd: "${{ inputs.repo-branchpreviews-name }}"
+        cwd: '${{ inputs.repo-branchpreviews-name }}'
 
     # we need self-hosted runner only because of this step
     - name: Refresh Argo and wait for the deletion to be finished
@@ -94,6 +94,6 @@ runs:
       env:
         OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-branchpreviews-name }}
       run: |
-        cd "${{ inputs.repo-branchpreview-templates-name }}"
-        ./Ops.sh refresh-branchpreviews "${{ inputs.argo-host }}" \
-          "${{ inputs.argo-sync-user-token }}"
+        cd '${{ inputs.repo-branchpreview-templates-name }}'
+        ./Ops.sh refresh-branchpreviews '${{ inputs.argo-host }}' \
+          '${{ inputs.argo-sync-user-token }}'

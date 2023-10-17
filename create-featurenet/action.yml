@@ -84,42 +84,42 @@ runs:
       shell: bash
       run: |
         if [[
-          ! "${{ inputs.featurenet-name }}" =~ ^[a-z0-9][a-z0-9\-]{4,48}$
+          ! '${{ inputs.featurenet-name }}' =~ ^[a-z0-9][a-z0-9\-]{4,48}$
         ]]
         then
           echo "!!! Invalid featurenet name"
           exit 1
         fi
         if [[
-          "${{ inputs.featurenet-aleph-node-image }}" != "" && \
-          ! "${{ inputs.featurenet-aleph-node-image }}" =~ ^[a-f0-9]{7}$ && \
-          "${{ inputs.featurenet-aleph-node-image }}" != "testnet" && \
-          "${{ inputs.featurenet-aleph-node-image }}" != "mainnet"
+          '${{ inputs.featurenet-aleph-node-image }}' != "" && \
+          ! '${{ inputs.featurenet-aleph-node-image }}' =~ ^[a-f0-9]{7}$ && \
+          '${{ inputs.featurenet-aleph-node-image }}' != "testnet" && \
+          '${{ inputs.featurenet-aleph-node-image }}' != "mainnet"
         ]]
         then
           echo "!!! Invalid featurenet node image tag"
           exit 1
         fi
         if [[
-          "${{ inputs.rolling-update-partition }}" != "" && \
-          ! "${{ inputs.rolling-update-partition }}" =~ ^[0-9]$
+          '${{ inputs.rolling-update-partition }}' != "" && \
+          ! '${{ inputs.rolling-update-partition }}' =~ ^[0-9]$
         ]]
         then
           echo "!!! Expected rolling update partition to be a cardinal value from 0 to 9"
           exit 1
         fi
         if [[
-          "${{ inputs.replicas }}" != "" && \
-          ! "${{ inputs.replicas }}" =~ ^[0-9]{1,2}$ || "${{ inputs.replicas }}" -gt 50
+          '${{ inputs.replicas }}' != "" && \
+          ! '${{ inputs.replicas }}' =~ ^[0-9]{1,2}$ || '${{ inputs.replicas }}' -gt 50
         ]]
         then
           echo "!!! Expected replicas to be a cardinal value from 0 to 50"
           exit 1
         fi
         if [[
-          "${{ inputs.expiration }}" != "" && \
-          ! "${{ inputs.expiration }}" =~ ^[0-9]{1,6}h$ && \
-          "${{ inputs.expiration }}" != "never"
+          '${{ inputs.expiration }}' != "" && \
+          ! '${{ inputs.expiration }}' =~ ^[0-9]{1,6}h$ && \
+          '${{ inputs.expiration }}' != "never"
         ]]
         then
           echo "!!! Expected expiration to have values from set {3h, 12h, 24h, 48h, 96h, never}"

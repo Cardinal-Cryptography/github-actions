@@ -45,7 +45,9 @@ outputs:
   safe-branch-name:
     description: Safe branch name
     value: ${{ steps.start-branchpreview.outputs.safe-branch-name }}
-
+  base64:
+    description: All outputs encoded in base64
+    value: ${{ steps.start-branchpreview.outputs.all-base64 }}
 runs:
   using: "composite"
   steps:
@@ -53,18 +55,18 @@ runs:
       shell: bash
       run: |
         if [[
-          ! "${{ inputs.repository-name }}" =~ ^[a-zA-Z0-9-]+$
+          ! '${{ inputs.repository-name }}' =~ ^[a-zA-Z0-9-]+$
         ]]
         then
-          echo "!!! Invalid repository name"
+          echo '!!! Invalid repository name'
           exit 1
         fi
 
         if [[
-          ! "${{ inputs.branch-name }}" =~ ^[a-zA-Z0-9/_-]+$
+          ! '${{ inputs.branch-name }}' =~ ^[a-zA-Z0-9/_-]+$
         ]]
         then
-          echo "!!! Invalid branch name"
+          echo '!!! Invalid branch name'
           exit 1
         fi
 
@@ -73,7 +75,7 @@ runs:
       with:
         repository: Cardinal-Cryptography/${{ inputs.repo-branchpreviews-name }}
         token: ${{ inputs.gh-ci-token }}
-        path: "${{ inputs.repo-branchpreviews-name }}"
+        path: '${{ inputs.repo-branchpreviews-name }}'
         ref: main
 
     - name: Checkout branchpreview templates repo
@@ -81,7 +83,7 @@ runs:
       with:
         repository: Cardinal-Cryptography/${{ inputs.repo-branchpreview-templates-name }}
         token: ${{ inputs.gh-ci-token }}
-        path: "${{ inputs.repo-branchpreview-templates-name }}"
+        path: '${{ inputs.repo-branchpreview-templates-name }}'
         ref: compatibility
 
     - name: Start branchpreview
@@ -91,37 +93,40 @@ runs:
       env:
         OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-branchpreviews-name }}
       run: |
-        cd "${{ inputs.repo-branchpreview-templates-name }}"
+        cd '${{ inputs.repo-branchpreview-templates-name }}'
         ./Ops.sh create-branchpreview \
-          "${{ inputs.repository-name }}" \
-          "${{ inputs.branch-name }}" \
-          "${{ inputs.image }}" | tee -a tmp-opssh-createbranchpreviews-output.txt
+          '${{ inputs.repository-name }}' \
+          '${{ inputs.branch-name }}' \
+          '${{ inputs.image }}' | tee -a tmp-opssh-createbranchpreviews-output.txt
 
-        app_name=$(cat tmp-opssh-createbranchpreviews-output.txt | grep "^__output:app-name:" | cut -d: -f3)
-        safe_branch_name=$(cat tmp-opssh-createbranchpreviews-output.txt | grep "^__output:safe-branch-name:" | cut -d: -f3)
-        image_tag=$(echo "${{ inputs.image }}" | cut -d: -f2)
+        app_name=$(cat tmp-opssh-createbranchpreviews-output.txt | grep '^__output:app-name:' | cut -d: -f3)
+        safe_branch_name=$(cat tmp-opssh-createbranchpreviews-output.txt | grep '^__output:safe-branch-name:' | cut -d: -f3)
+        image_tag=$(echo '${{ inputs.image }}' | cut -d: -f2)
+        all_base64=$(cat tmp-opssh-createbranchpreviews-output.txt | grep '^__output:' | sed 's|__output:||g' | base64 -w 0)
+
         echo "app-name=${app_name}" >> $GITHUB_OUTPUT
         echo "safe-branch-name=${safe_branch_name}" >> $GITHUB_OUTPUT
         echo "image-tag=${image_tag}" >> $GITHUB_OUTPUT
+        echo "all-base64=${all_base64}" >> $GITHUB_OUTPUT
       # yamllint enable rule:line-length
 
     - name: Commit branchpreview change
       uses: EndBug/add-and-commit@v9.1.1
       with:
-        author_name: "${{ inputs.git-commit-author }}"
-        author_email: "${{ inputs.git-commit-email }}"
+        author_name: '${{ inputs.git-commit-author }}'
+        author_email: '${{ inputs.git-commit-email }}'
         # yamllint disable-line rule:line-length
-        message: "Upsert ${{ inputs.repository-name }}:${{ inputs.branch-name }} with image tag: ${{ steps.start-branchpreview.outputs.image-tag }}"
+        message: 'Upsert ${{ inputs.repository-name }}:${{ inputs.branch-name }} with image tag: ${{ steps.start-branchpreview.outputs.image-tag }}'
         add: '["*.yaml","*.txt"]'
-        cwd: "${{ inputs.repo-branchpreviews-name }}"
+        cwd: '${{ inputs.repo-branchpreviews-name }}'
 
     - name: Refresh Argo and wait for the creation to be finished
       shell: bash
       env:
-        OPSSH_TARGETPATH: "${{ github.workspace }}/${{ inputs.repo-branchpreviews-name }}"
+        OPSSH_TARGETPATH: '${{ github.workspace }}/${{ inputs.repo-branchpreviews-name }}'
       run: |
-        cd "${{ inputs.repo-branchpreview-templates-name }}"
-        ./Ops.sh refresh-branchpreviews "${{ inputs.argo-host }}" \
-          "${{ inputs.argo-sync-user-token }}" \
-          "${{ steps.start-branchpreview.outputs.app-name }}" \
-          "${{ inputs.hard-refresh == 'true' && 'true' || 'false' }}"
+        cd '${{ inputs.repo-branchpreview-templates-name }}'
+        ./Ops.sh refresh-branchpreviews '${{ inputs.argo-host }}' \
+          '${{ inputs.argo-sync-user-token }}' \
+          '${{ steps.start-branchpreview.outputs.app-name }}' \
+          '${{ inputs.hard-refresh == 'true' && 'true' || 'false' }}'
