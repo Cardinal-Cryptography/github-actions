@@ -29,7 +29,7 @@ runs:
       run: |
         if ! command -v rustup &>/dev/null; then
           curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused -fsSL \
-            "https://sh.rustup.rs" | sh -s -- --default-toolchain none -y
+            'https://sh.rustup.rs' | sh -s -- --default-toolchain none -y
           echo "${CARGO_HOME:-$HOME/.cargo}/bin" >> $GITHUB_PATH
         fi
 
@@ -60,8 +60,8 @@ runs:
       env:
         CHANNEL: ${{ inputs.channel || steps.toolchain-channel.outputs.value }}
       run: |
-        if [[ -z "${{  steps.toolchain-channel.outputs.value }}" ]]; then
-          echo "Could not find value for toolchain.channel in rust-toolchain.toml!"
+        if [[ -z '${{  steps.toolchain-channel.outputs.value }}' ]]; then
+          echo 'Could not find value for toolchain.channel in rust-toolchain.toml!'
           exit 1
         fi
         rustup toolchain install ${{ env.CHANNEL }}

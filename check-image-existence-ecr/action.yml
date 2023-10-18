@@ -14,6 +14,6 @@ runs:
       run: |
         image_not_exist=$(docker manifest inspect ${{ inputs.ecr-image }} &> /dev/null ; echo $?)
         if [[ $image_not_exist -eq 1 ]]; then
-          echo "Error: docker image ${{ inputs.ecr-image }} doesn't exist"
+          echo 'Error: docker image ${{ inputs.ecr-image }} does not exist'
           exit 1
         fi

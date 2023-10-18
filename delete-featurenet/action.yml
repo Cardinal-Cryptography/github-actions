@@ -59,7 +59,7 @@ runs:
       shell: bash
       # yamllint disable rule:line-length
       run: |
-        final_name_local=${{ inputs.featurenet-name }}
+        final_name_local='${{ inputs.featurenet-name }}'
         echo "final-featurenet-name=$final_name_local" >> $GITHUB_OUTPUT
       # yamllint enable rule:line-length
 
@@ -75,10 +75,10 @@ runs:
       shell: bash
       id: get-featurenet-template-tag
       run: |
-        cd "${{ inputs.repo-featurenets-name }}"
+        cd '${{ inputs.repo-featurenets-name }}'
         featurenet_template_tag=main
-        if [[ -f "fe-${{ steps.get-final-name.outputs.final-featurenet-name }}.tag.txt" ]]; then
-          featurenet_template_tag=$(cat "fe-${{ steps.get-final-name.outputs.final-featurenet-name }}.tag.txt")
+        if [[ -f 'fe-${{ steps.get-final-name.outputs.final-featurenet-name }}.tag.txt' ]]; then
+          featurenet_template_tag=$(cat 'fe-${{ steps.get-final-name.outputs.final-featurenet-name }}.tag.txt')
           if [[ -z "${featurenet_template_tag}" ]]; then
             featurenet_template_tag=main
           fi 
@@ -108,8 +108,8 @@ runs:
       env:
         OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
-        cd "${{ inputs.repo-featurenet-template-name }}"
-        ./Ops.sh delete-featurenet "${{ steps.get-final-name.outputs.final-featurenet-name }}"
+        cd '${{ inputs.repo-featurenet-template-name }}'
+        ./Ops.sh delete-featurenet '${{ steps.get-final-name.outputs.final-featurenet-name }}'
       # yamllint enable rule:line-length
 
     - name: Commit deletion of the feature environment.
@@ -127,9 +127,9 @@ runs:
       env:
         OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
-        cd "${{ inputs.repo-featurenet-template-name }}"
-        ./Ops.sh refresh-featurenets "${{ inputs.argo-host }}" \
-          "${{ inputs.argo-sync-user-token }}"
+        cd '${{ inputs.repo-featurenet-template-name }}'
+        ./Ops.sh refresh-featurenets '${{ inputs.argo-host }}' \
+          '${{ inputs.argo-sync-user-token }}'
 
     - name: Clean S3 storage
       shell: bash
@@ -138,7 +138,7 @@ runs:
           -e AWS_ACCESS_KEY_ID \
           -e AWS_SECRET_ACCESS_KEY \
           -e AWS_REGION \
-          -e FEATURENETS_S3_BUCKET_NAME=${{ inputs.featurenet-keys-s3bucket-name }} \
-          -e FEATURENET_NAME=fe-${{ steps.get-final-name.outputs.final-featurenet-name }} \
-          ${{ inputs.ecr-public-registry }}featurenet-helper:v0.4.0 \
+          -e 'FEATURENETS_S3_BUCKET_NAME=${{ inputs.featurenet-keys-s3bucket-name }}' \
+          -e 'FEATURENET_NAME=fe-${{ steps.get-final-name.outputs.final-featurenet-name }}' \
+          '${{ inputs.ecr-public-registry }}featurenet-helper:v0.4.0' \
           delete-featurenet-data-from-s3
