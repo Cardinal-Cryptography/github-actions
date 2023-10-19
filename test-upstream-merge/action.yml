@@ -45,7 +45,7 @@ runs:
       id: get-pr-branch
       shell: bash
       run: |
-        echo "pr-branch=a0-ops-upstream-automerge" >> $GITHUB_OUTPUT
+        echo 'pr-branch=a0-ops-upstream-automerge' >> $GITHUB_OUTPUT
 
     - name: Get upstream repository name from URL
       shell: bash
@@ -85,9 +85,9 @@ runs:
         cd target
         set +e
         merge_needed="no"
-        git merge-base --is-ancestor "${{ steps.get-upstream-sha.outputs.sha }}" HEAD
+        git merge-base --is-ancestor '${{ steps.get-upstream-sha.outputs.sha }}' HEAD
         if [[ $? != 0 ]]; then
-          merge_needed="yes"
+          merge_needed='yes'
         fi
         set -e
         echo "merge=${merge_needed}" >> $GITHUB_OUTPUT
@@ -95,23 +95,23 @@ runs:
     - name: Remove existing upstream merge branch if nothing to do
       shell: bash
       run: |
-        if [[ "${{ steps.check-if-merge-needed.outputs.merge }}" != "yes" ]]; then
-          echo "Upstream SHA is an ancestor of target branch.  There is nothing to do.  Removing existing auto merge branch..."
+        if [[ '${{ steps.check-if-merge-needed.outputs.merge }}' != 'yes' ]]; then
+          echo 'Upstream SHA is an ancestor of target branch.  There is nothing to do.  Removing existing auto merge branch...'
           set +e
-          git push origin :${{ steps.get-pr-branch.outputs.pr-branch }}
+          git push origin ':${{ steps.get-pr-branch.outputs.pr-branch }}'
           set -e
         fi
 
     - name: Add upstream
       shell: bash
       run: |
-        if [[ "${{ steps.check-if-merge-needed.outputs.merge }}" != "yes" ]]; then
-          echo "There is nothing to do."
+        if [[ '${{ steps.check-if-merge-needed.outputs.merge }}' != 'yes' ]]; then
+          echo 'There is nothing to do.'
           exit 0
         fi
 
         cd target
-        git remote add upstream ${{ inputs.upstream-repo-url }}
+        git remote add upstream '${{ inputs.upstream-repo-url }}'
         git fetch upstream
         git remote -v
         git remote show upstream
@@ -121,20 +121,20 @@ runs:
       id: create-pull-request
       # yamllint enable rule:line-length
       run: |
-        if [[ "${{ steps.check-if-merge-needed.outputs.merge }}" != "yes" ]]; then
-          echo "There is nothing to do."
+        if [[ '${{ steps.check-if-merge-needed.outputs.merge }}' != 'yes' ]]; then
+          echo 'There is nothing to do.'
           exit 0
         fi
 
         cd target
-        git config user.name "${{ inputs.git-commit-author }}"
-        git config user.email "${{ inputs.git-commit-author }}"
+        git config user.name '${{ inputs.git-commit-author }}'
+        git config user.email '${{ inputs.git-commit-author }}'
 
         # Name of PR branch
-        pr_branch="${{ steps.get-pr-branch.outputs.pr-branch }}"
+        pr_branch='${{ steps.get-pr-branch.outputs.pr-branch }}'
 
         # Get latest common ancestor
-        merge_base=$(git merge-base "${{ inputs.target-branch }}" "upstream/${{ inputs.upstream-branch }}")
+        merge_base=$(git merge-base '${{ inputs.target-branch }}' 'upstream/${{ inputs.upstream-branch }}')
 
         # Remove existing branch
         set +e
@@ -156,7 +156,7 @@ runs:
         sleep 5
 
         # Create a pull request
-        pr_title="Merge upstream from ${{ steps.get-repository-name.outputs.repository-name }}@${{ inputs.upstream-branch }} (${{ steps.get-upstream-sha.outputs.sha }})"
+        pr_title='Merge upstream from ${{ steps.get-repository-name.outputs.repository-name }}@${{ inputs.upstream-branch }} (${{ steps.get-upstream-sha.outputs.sha }})'
         cat >pr_body.txt <<EOF
         # Merge upstream
         ## Upstream details
@@ -197,17 +197,17 @@ runs:
       shell: bash
       id: merge-upstream
       run: |
-        if [[ "${{ steps.check-if-merge-needed.outputs.merge }}" != "yes" ]]; then
-          echo "There is nothing to do."
+        if [[ '${{ steps.check-if-merge-needed.outputs.merge }}' != 'yes' ]]; then
+          echo 'There is nothing to do.'
           exit 0
         fi
 
         cd target
-        git checkout "${{ inputs.target-branch }}"
+        git checkout '${{ inputs.target-branch }}'
 
         set +e
         merge_failed=0
-        git merge upstream/${{ inputs.upstream-branch }}
+        git merge 'upstream/${{ inputs.upstream-branch }}'
         if [[ $? != 0 ]]; then
           merge_failed=1
         fi
@@ -218,17 +218,17 @@ runs:
       shell: bash
       if: ${{ inputs.slack-webhook-url != '' }}
       run: |
-        if [[ "${{ steps.check-if-merge-needed.outputs.merge }}" != "yes" ]]; then
-          echo "There is nothing to do."
+        if [[ '${{ steps.check-if-merge-needed.outputs.merge }}' != 'yes' ]]; then
+          echo 'There is nothing to do.'
           exit 0
         fi
 
-        run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-        target="${{ inputs.target-repo }}/${{ inputs.target-branch }}"
-        upstream="${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}"
-        pull_request_number="${{ steps.create-pull-request.outputs.pull-request-number }}"
-        pull_request_url="${{ steps.create-pull-request.outputs.pull-request-url }}"
-        if [[ "${{ steps.merge-upstream.outputs.merge-failed }}" == "1" ]]; then
+        run_url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+        target='${{ inputs.target-repo }}/${{ inputs.target-branch }}'
+        upstream='${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}'
+        pull_request_number='${{ steps.create-pull-request.outputs.pull-request-number }}'
+        pull_request_url='${{ steps.create-pull-request.outputs.pull-request-url }}'
+        if [[ '${{ steps.merge-upstream.outputs.merge-failed }}' == '1' ]]; then
           cat ${{ github.action_path }}/slack-msg-failure.json > tmp-slack-msg.json
         else
           cat ${{ github.action_path }}/slack-msg-success.json > tmp-slack-msg.json
@@ -239,4 +239,4 @@ runs:
         sed -i "s|__PULL_REQUEST_NUMBER__|${pull_request_number}|g" tmp-slack-msg.json
         sed -i "s|__PULL_REQUEST_URL__|${pull_request_url}|g" tmp-slack-msg.json
         
-        curl -X POST -d @tmp-slack-msg.json "${{ inputs.slack-webhook-url }}"
+        curl -X POST -d @tmp-slack-msg.json '${{ inputs.slack-webhook-url }}'

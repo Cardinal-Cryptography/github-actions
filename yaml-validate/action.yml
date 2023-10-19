@@ -20,11 +20,11 @@ runs:
         cat .github/workflows/_check-vars-and-secrets.yml | \
           grep -o "secrets\.[A-Z0-9_]\+" | sed 's|secrets.||g' > tmp-secrets-list.txt
 
-        docker pull ${DOCKER_IMAGE}
+        docker pull '${{ env.DOCKER_IMAGE }}'
         docker run --rm --name tmp-ghv -v $(pwd)/.github:/dot-github \
           -v $(pwd)/tmp-vars-list.txt:/tmp-vars-list.txt \
           -v $(pwd)/tmp-secrets-list.txt:/tmp-secrets-list.txt \
-          ${DOCKER_IMAGE} \
+          '${{ env.DOCKER_IMAGE }}' \
           validate -p /dot-github \
             -z /tmp-vars-list.txt \
             -s /tmp-secrets-list.txt > validation_result
