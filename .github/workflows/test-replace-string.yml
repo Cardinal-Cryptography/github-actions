@@ -38,7 +38,7 @@ jobs:
       - name: Create a dummy file to read from
         shell: bash
         run: |
-          echo 'Apricot Blueberry' > tmp-read-from-file.txt
+          echo -n 'Apricot Blueberry' > tmp-read-from-file.txt
 
       - name: Replace string from file
         id: replace-from-file
