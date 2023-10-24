@@ -34,7 +34,7 @@ try {
   }
 
   const regex = new RegExp(inReplaceRegex, inFlags);
-  strReplaced = string.replace(regex, inReplaceWith);
+  strReplaced = strToReplace.replace(regex, inReplaceWith);
 
 
   // Output

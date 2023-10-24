@@ -1,7 +1,9 @@
 ---
 name: Replace string
 description: |
-  Replaces string...
+  This action replaces a specified string using regular expression.
+  It can be passed as an input or read from a file.
+  Also, the output string can be additional written to file.
 inputs:
   string:
     description: String to be replaced
