@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Replace string
-        id: replace-string
+        id: str
         uses: ./replace-string
         with:
           string: 'Apple Redberry'
@@ -30,8 +30,8 @@ jobs:
       - name: Check replaced string
         shell: bash
         run: |
-          if [[ '${{ steps.replace-string.outputs.replaced-string }}' != 'Apple Apricot' ]]; then
-            echo '!!! Action replace-string failed to make simple string replacement'
+          if [[ '${{ steps.str.outputs.replaced-string }}' != 'Apple Apricot' ]]; then
+            echo '!!! Action failed to make simple string replacement'
             exit 1
           fi
 
@@ -41,7 +41,7 @@ jobs:
           echo -n 'Apricot Blueberry' > tmp-read-from-file.txt
 
       - name: Replace string from file
-        id: replace-from-file
+        id: from-file
         uses: ./replace-string
         with:
           read-from-file: 'tmp-read-from-file.txt'
@@ -52,8 +52,8 @@ jobs:
       - name: Check replaced string
         shell: bash
         run: |
-          if [[ '${{ steps.replace-from-file.outputs.replaced-string }}' != 'Apricot Redberry' ]]; then
-            echo '!!! Action replace-string failed to replace string from a file'
+          if [[ '${{ steps.from-file.outputs.replaced-string }}' != 'Apricot Redberry' ]]; then
+            echo '!!! Action failed to replace string from a file'
             exit 1
           fi
 
@@ -64,7 +64,6 @@ jobs:
           echo "read-me=Cranberry and green apple" >> $GITHUB_OUTPUT
 
       - name: Replace string from output and write to file
-        id: replace-to-file
         uses: ./replace-string
         with:
           string: ${{ steps.output.outputs.read-me }}
@@ -77,9 +76,9 @@ jobs:
         shell: bash
         run: |
           if [[ ! -f tmp-write-to-file.txt ]]; then
-            echo "!!! Action replace-string failed to create an output file"
+            echo "!!! Action failed to create an output file"
           fi
           output_from_file=$(cat tmp-write-to-file.txt);
           if [[ "${output_from_file}" != 'Cranberry and red apple' ]]; then
-            echo "!!! Action replace-string failed to create an output file with properly replaced string"
+            echo "!!! Action failed to create an output file with replaced string"
           fi
