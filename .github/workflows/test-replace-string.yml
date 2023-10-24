@@ -2,9 +2,12 @@
 name: Test replace-string action
 
 on:
+  pull_request:
+    branches:
+    - main
   push:
     branches:
-      - A0-3280-replace-string
+    - main
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
