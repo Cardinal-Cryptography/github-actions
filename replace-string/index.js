@@ -41,6 +41,7 @@ try {
   const regex = new RegExp(inReplaceRegex, inFlags);
   strReplaced = strToReplace.replace(regex, inReplaceWith);
 
+  console.log(strReplaced);
 
   // Output
   if (inWriteToFile != '') {
