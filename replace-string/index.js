@@ -33,6 +33,11 @@ try {
   	strToReplace = inString;
   }
 
+  console.log(strToReplace);
+  console.log(inReplaceRegex);
+  console.log(inFlags);
+  console.log(inReplaceWith);
+
   const regex = new RegExp(inReplaceRegex, inFlags);
   strReplaced = strToReplace.replace(regex, inReplaceWith);
 
@@ -42,7 +47,7 @@ try {
   	fs.writeFileSync(inWriteToFile, strReplaced);
   }
 
-  core.setOutput('replaced-string');
+  core.setOutput('replaced-string', strReplaced);
 } catch (error) {
   core.setFailed(error.message);
 }
