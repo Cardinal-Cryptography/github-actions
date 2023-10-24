@@ -74,10 +74,12 @@ jobs:
           write-to-file: 'tmp-write-to-file.txt'
 
       - name: Check replaced string
-        if [[ ! -f tmp-write-to-file.txt ]]; then
-          echo "!!! Action replace-string failed to create an output file"
-        fi
-        output_from_file=$(cat tmp-write-to-file.txt);
-        if [[ "${output_from_file}" != 'Cranberry and red apple' ]]; then
-          echo "!!! Action replace-string failed to create an output file with properly replaced string"
-        fi
+        shell: bash
+        run: |
+          if [[ ! -f tmp-write-to-file.txt ]]; then
+            echo "!!! Action replace-string failed to create an output file"
+          fi
+          output_from_file=$(cat tmp-write-to-file.txt);
+          if [[ "${output_from_file}" != 'Cranberry and red apple' ]]; then
+            echo "!!! Action replace-string failed to create an output file with properly replaced string"
+          fi
