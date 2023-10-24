@@ -30,7 +30,7 @@ jobs:
       - name: Check replaced string
         shell: bash
         run: |
-          if [[ '${{ steps.replace-string.output.replaced-string }}' != 'Apple Apricot' ]]; then
+          if [[ '${{ steps.replace-string.outputs.replaced-string }}' != 'Apple Apricot' ]]; then
             echo '!!! Action replace-string failed to make simple string replacement'
             exit 1
           fi
@@ -52,7 +52,7 @@ jobs:
       - name: Check replaced string
         shell: bash
         run: |
-          if [[ '${{ steps.replace-string.output.replaced-string }}' != 'Apricot Redberry' ]]; then
+          if [[ '${{ steps.replace-string.outputs.replaced-string }}' != 'Apricot Redberry' ]]; then
             echo '!!! Action replace-string failed to replace string from a file'
             exit 1
           fi

@@ -33,15 +33,9 @@ try {
   	strToReplace = inString;
   }
 
-  console.log(strToReplace);
-  console.log(inReplaceRegex);
-  console.log(inFlags);
-  console.log(inReplaceWith);
-
   const regex = new RegExp(inReplaceRegex, inFlags);
   strReplaced = strToReplace.replace(regex, inReplaceWith);
 
-  console.log(strReplaced);
 
   // Output
   if (inWriteToFile != '') {
