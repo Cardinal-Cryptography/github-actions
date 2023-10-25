@@ -12,3 +12,13 @@ runs:
   steps:
     - name: Runs validate-inputs
       uses: ./validate-inputs
+
+    - name: Debug
+      shell: bash
+      run: |
+        find ${{ github.workspace }}
+
+    - name: Debug 2
+      shell: bash
+      run: |
+        find .

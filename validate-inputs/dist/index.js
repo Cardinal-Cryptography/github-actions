@@ -6,7 +6,7 @@
 /************************************************************************/
 var __webpack_exports__ = {};
 try {
-  console.log(process.env);
+  console.log('Hello');
 
 } catch (error) {
   core.setFailed(error.message);
