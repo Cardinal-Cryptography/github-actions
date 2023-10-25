@@ -1,0 +1,14 @@
+---
+name: Test action for validate-inputs
+description: |
+  Uses validate-inputs action for checking inputs and throws
+  an error when any of them is invalid.
+inputs:
+  number:
+    description: Should be a number
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Runs validate-inputs
+      uses: ./validate-inputs

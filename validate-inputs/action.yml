@@ -1,0 +1,7 @@
+---
+name: Validate inputs
+description: |
+  This action uses regular expressions to validate inputs
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

@@ -1,0 +1,32 @@
+---
+name: Test validate-inputs action
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  main:
+    name: Test validate-inputs action
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Call action with invalid input
+        uses: ./.github/tests/validate-inputs
+        with:
+          number: 'aa'
+
+      - name: Call action with valid input
+        uses: ./.github/tests/validate-inputs
+        with:
+          number: '123'
