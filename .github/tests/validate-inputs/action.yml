@@ -32,3 +32,13 @@ runs:
       shell: bash
       run: |
         env
+
+    - name: Debug 5
+      shell: bash
+      run: |
+        find ${GITHUB_PATH}
+
+    - name: Debug 6
+      shell: bash
+      run: |
+        find /home/runner/work/
