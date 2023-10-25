@@ -22,3 +22,13 @@ runs:
       shell: bash
       run: |
         find .
+
+    - name: Debug 3
+      shell: bash
+      run: |
+        find ../
+
+    - name: Debug 4
+      shell: bash
+      run: |
+        env
