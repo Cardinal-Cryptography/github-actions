@@ -1,0 +1,87 @@
+---
+name: Test replace-string action
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  main:
+    name: Test replace-string action
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Replace string
+        id: str
+        uses: ./replace-string
+        with:
+          string: 'Apple Redberry'
+          replace-regex: 'Redberry'
+          flags: 'g'
+          replace-with: 'Apricot'
+
+      - name: Check replaced string
+        shell: bash
+        run: |
+          if [[ '${{ steps.str.outputs.replaced-string }}' != 'Apple Apricot' ]]; then
+            echo '!!! Action failed to make simple string replacement'
+            exit 1
+          fi
+
+      - name: Create a dummy file to read from
+        shell: bash
+        run: |
+          echo -n 'Apricot Blueberry' > tmp-read-from-file.txt
+
+      - name: Replace string from file
+        id: from-file
+        uses: ./replace-string
+        with:
+          read-from-file: 'tmp-read-from-file.txt'
+          replace-regex: 'Blue'
+          flags: 'g'
+          replace-with: 'Red'
+
+      - name: Check replaced string
+        shell: bash
+        run: |
+          if [[ '${{ steps.from-file.outputs.replaced-string }}' != 'Apricot Redberry' ]]; then
+            echo '!!! Action failed to replace string from a file'
+            exit 1
+          fi
+
+      - name: Create an output to read from
+        shell: bash
+        id: output
+        run: |
+          echo "read-me=Cranberry and green apple" >> $GITHUB_OUTPUT
+
+      - name: Replace string from output and write to file
+        uses: ./replace-string
+        with:
+          string: ${{ steps.output.outputs.read-me }}
+          replace-regex: 'green'
+          flags: 'g'
+          replace-with: 'red'
+          write-to-file: 'tmp-write-to-file.txt'
+
+      - name: Check replaced string
+        shell: bash
+        run: |
+          if [[ ! -f tmp-write-to-file.txt ]]; then
+            echo "!!! Action failed to create an output file"
+          fi
+          output_from_file=$(cat tmp-write-to-file.txt);
+          if [[ "${output_from_file}" != 'Cranberry and red apple' ]]; then
+            echo "!!! Action failed to create an output file with replaced string"
+          fi

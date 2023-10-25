@@ -1,0 +1,34 @@
+---
+name: Replace string
+description: |
+  This action replaces a specified string using regular expression.
+  It can be passed as an input or read from a file.
+  Also, the output string can be additional written to file.
+inputs:
+  string:
+    description: String to be replaced
+    required: false
+  read-from-file:
+    description: Read from a file instead of taking 'string' input
+    required: false
+  read-encoding:
+    description: When reading from a file, encoding can be set
+    required: false
+  replace-regex:
+    description: Regular expression for replace function
+    required: true
+  replace-with:
+    description: String to be replaced with
+    required: true
+  write-to-file:
+    description: Target file where replaced string should be saved.  When empty, file is not created.
+    required: false
+  flags:
+    description: Replace flags
+    required: false
+outputs:
+  replaced-string:
+    description: Output string
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
