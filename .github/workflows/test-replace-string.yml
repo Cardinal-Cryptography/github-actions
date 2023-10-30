@@ -85,3 +85,35 @@ jobs:
           if [[ "${output_from_file}" != 'Cranberry and red apple' ]]; then
             echo "!!! Action failed to create an output file with replaced string"
           fi
+
+      - name: Create a dummy file with multiple variables
+        id: from-file-with-multiple
+        run: |
+          cat >tmp-read-from-file-multiple.txt <<EOF
+            Line without anything to replace
+            The following should contain an apple: __APPLE__ is red
+            And the following shall be '$AZERO': __CURRENCY__
+            Thanks!
+          EOF
+          cat >tmp-write-to-file-multiple-expected.txt <<EOF
+          Line without anything to replace
+          The following should contain an apple: apple is red
+          And the following shall be '$AZERO': $AZERO
+          Thanks!
+          EOF
+
+      - name: Replace multiple strings
+        uses: ./replace-string
+        with:
+          read-from-file: 'tmp-read-from-file-multiple.txt'
+          replace-regex: |-
+            __APPLE__
+            __CURRENCY__
+          replace-with: |-
+            apple
+            $AZERO
+          write-to-file: 'tmp-write-to-file-multiple.txt'
+
+      - name: Check multistring replacement
+        run: |
+          diff tmp-write-to-file-multiple.txt tmp-write-to-file-multiple-expected.txt

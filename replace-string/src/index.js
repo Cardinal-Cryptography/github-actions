@@ -23,6 +23,21 @@ try {
   	throw new Error('Regular expression cannot be empty')
   }
 
+  const inReplaceRegexArr = inReplaceRegex.split(/\n/)
+  const inReplaceWithArr = inReplaceRegex.split(/\n/)
+
+  // If replace-regex is multiline then replace-with should be multiline as well and have the same
+  // number.  Naturally, in this scenario it isn't possible to use a multiline value as a replacement.
+  if (inReplaceRegexArr.length > 1) {
+    if (inReplaceRegexArr.length != inReplaceWithArr.length) {
+      throw new Error('When multiple regular expressions (multiline), replace-with should have exactly same number of lines')
+    }
+    for (i=0; i<inReplaceRegexArr.length; i++) {
+      if (inReplaceRegexArr[i] == '') {
+        throw new Error('Regular expression line cannot be empty')
+      }
+    }
+  }
 
   // Action
   strToReplace = '';
@@ -33,9 +48,15 @@ try {
   	strToReplace = inString;
   }
 
-  const regex = new RegExp(inReplaceRegex, inFlags);
-  strReplaced = strToReplace.replace(regex, inReplaceWith);
-
+  if (inReplaceRegexArr.length > 1) {
+    for (i=0; i<inReplaceRegexArr.length; i++) {
+      const regex = new RegExp(inReplaceRegexArr[0], inFlags);
+      strReplaced = strToReplace.replace(regex, inReplaceWith[i]);
+    }
+  } else {
+    const regex = new RegExp(inReplaceRegex, inFlags);
+    strReplaced = strToReplace.replace(regex, inReplaceWith);
+  }
 
   // Output
   if (inWriteToFile != '') {
