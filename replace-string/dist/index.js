@@ -30067,8 +30067,10 @@ try {
     }
   } else {
     console.log('Got replace regex of: '+inReplaceRegex)
+    console.log('Got replace with of: '+inReplaceWith)
     const regex = new RegExp(inReplaceRegex, inFlags);
     outReplacedString = outReplacedString.replace(regex, inReplaceWith);
+    console.log('Got replaced-string: '+outReplacedString)
   }
 
   // Output
