@@ -92,7 +92,7 @@ jobs:
           cat >tmp-read-from-file-multiple.txt <<EOF
           Line without anything to replace
           The following should contain an apple: __APPLE__ is red
-          And the following shall be '$AZERO': __CURRENCY__
+          And the following shall be '\$AZERO': __CURRENCY__
           Thanks!
           EOF
 
