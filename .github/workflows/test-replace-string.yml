@@ -112,7 +112,7 @@ jobs:
             __CURRENCY__
           replace-with: |-
             apple
-            \$AZERO
+            $AZERO
           write-to-file: 'tmp-write-to-file-multiple.txt'
 
       - name: Check multistring replacement
