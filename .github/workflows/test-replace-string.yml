@@ -126,7 +126,7 @@ jobs:
         id: replace-newlines
         with:
           read-from-file: 'tmp-read-from-file-multiple.txt'
-          replace-regex: '(\n\r)+'
+          replace-regex: '\n'
           replace-with: '%'
           write-to-file: 'tmp-write-to-file-multiple-newlines.txt'
 
