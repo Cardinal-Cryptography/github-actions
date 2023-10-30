@@ -54,6 +54,7 @@ try {
       outReplacedString = outReplacedString.replace(regex, inReplaceWithArr[i]);
     }
   } else {
+    console.log('Got replace regex of: '+inReplaceRegex)
     const regex = new RegExp(inReplaceRegex, inFlags);
     outReplacedString = outReplacedString.replace(regex, inReplaceWith);
   }
