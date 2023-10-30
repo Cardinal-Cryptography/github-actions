@@ -135,7 +135,5 @@ jobs:
         shell: bash
         # yamllint disable rule:line-length
         run: |
-          if [[ '${{ steps.replace-newlines.outputs.replaced-string }}' != "Line without anything to replace%The following should contain an apple: __APPLE__ is red%And the following shall be '\$AZERO': __CURRENCY__%Thanks!%" ]]; then
-            echo "!!! Action failed to replace newline characters"
-            exit 1
-          fi
+          echo "Line without anything to replace%The following should contain an apple: __APPLE__ is red%And the following shall be '\$AZERO': __CURRENCY__%Thanks!%" > tmp-expected.txt
+          diff tmp-expected.txt tmp-write-to-file-multiple-newlines.txt
