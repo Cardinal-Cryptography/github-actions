@@ -80,8 +80,60 @@ jobs:
         run: |
           if [[ ! -f tmp-write-to-file.txt ]]; then
             echo "!!! Action failed to create an output file"
+            exit 1
           fi
           output_from_file=$(cat tmp-write-to-file.txt);
           if [[ "${output_from_file}" != 'Cranberry and red apple' ]]; then
             echo "!!! Action failed to create an output file with replaced string"
+            exit 1
           fi
+
+      - name: Create a dummy file with multiple variables
+        id: from-file-with-multiple
+        run: |
+          cat >tmp-read-from-file-multiple.txt <<EOF
+          Line without anything to replace
+          The following should contain an apple: __APPLE__ is red
+          And the following shall be '\$AZERO': __CURRENCY__
+          Thanks!
+          EOF
+
+          cat >tmp-write-to-file-multiple-expected.txt <<EOF
+          Line without anything to replace
+          The following should contain an apple: apple is red
+          And the following shall be '\$AZERO': \$AZERO
+          Thanks!
+          EOF
+
+      - name: Replace multiple strings
+        uses: ./replace-string
+        with:
+          read-from-file: 'tmp-read-from-file-multiple.txt'
+          replace-regex: |-
+            __APPLE__
+            __CURRENCY__
+          replace-with: |-
+            apple
+            $AZERO
+          write-to-file: 'tmp-write-to-file-multiple.txt'
+
+      - name: Check multistring replacement
+        run: |
+          diff tmp-write-to-file-multiple.txt tmp-write-to-file-multiple-expected.txt
+
+      - name: Replace newline characters
+        uses: ./replace-string
+        id: replace-newlines
+        with:
+          read-from-file: 'tmp-read-from-file-multiple.txt'
+          replace-regex: '\n'
+          replace-with: '%'
+          write-to-file: 'tmp-write-to-file-multiple-newlines.txt'
+          flags: g
+
+      - name: Check newline replacement
+        shell: bash
+        # yamllint disable rule:line-length
+        run: |
+          echo -n "Line without anything to replace%The following should contain an apple: __APPLE__ is red%And the following shall be '\$AZERO': __CURRENCY__%Thanks!%" > tmp-expected.txt
+          diff tmp-expected.txt tmp-write-to-file-multiple-newlines.txt
