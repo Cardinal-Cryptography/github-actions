@@ -30036,7 +30036,7 @@ try {
   }
 
   const inReplaceRegexArr = inReplaceRegex.split(/\n/);
-  const inReplaceWithArr = inReplaceRegex.split(/\n/);
+  const inReplaceWithArr = inReplaceWith.split(/\n/);
 
   console.log(inReplaceRegexArr);
   console.log(inReplaceWithArr);
@@ -30066,7 +30066,7 @@ try {
   if (inReplaceRegexArr.length > 1) {
     for (i=0; i<inReplaceRegexArr.length; i++) {
       const regex = new RegExp(inReplaceRegexArr[0], inFlags);
-      strReplaced = strToReplace.replace(regex, inReplaceWith[i]);
+      strReplaced = strToReplace.replace(regex, inReplaceWithArr[i]);
     }
   } else {
     const regex = new RegExp(inReplaceRegex, inFlags);
