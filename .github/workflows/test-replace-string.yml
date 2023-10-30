@@ -134,7 +134,8 @@ jobs:
       - name: Check newline replacement
         shell: bash
         run: |
-          if [[ '${{ steps.replace-newlines.outputs.replaced-string }}' != 'Line without anything to replace%The following should contain an apple: __APPLE__ is red%And the following shall be \\'$AZERO\\': __CURRENCY__%Thanks!' ]]; then
+          # yamllint disable-line rule:line-length
+          if [[ '${{ steps.replace-newlines.outputs.replaced-string }}' != 'Line without anything to replace%The following should contain an apple: __APPLE__ is red%And the following shall be \\'$AZERO\\': __CURRENCY__%Thanks!%' ]]; then
             echo "!!! Action failed to replace newline characters"
             exit 1
           fi
