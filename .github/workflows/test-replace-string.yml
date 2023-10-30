@@ -127,7 +127,7 @@ jobs:
         with:
           read-from-file: 'tmp-read-from-file-multiple.txt'
           replace-regex: \n
-          replace-with: %
+          replace-with: '%'
           write-to-file: 'tmp-write-to-file-multiple-newlines.txt'
 
       - name: Check newline replacement
