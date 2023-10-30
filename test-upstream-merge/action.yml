@@ -155,35 +155,63 @@ runs:
         # Wait a while to give GitHub action process things before we send another payload
         sleep 5
 
-        # Create a pull request
-        pr_title='Merge upstream from ${{ steps.get-repository-name.outputs.repository-name }}@${{ inputs.upstream-branch }} (${{ steps.get-upstream-sha.outputs.sha }})'
-        cat >pr_body.txt <<EOF
-        # Merge upstream
-        ## Upstream details
+    - name: Create PR body
+      uses: Cardinal-Cryptography/replace-string@v3
+      with:
+        read-from-file: ${{ github.action_path }}/pr-body.txt
+        write-to-file: pr-body-to-add.txt
+        replace-regex: |-
+          __UPSTREAM_REPO_URL__
+          __REPOSITORY_NAME__
+          __UPSTREAM_BRANCH__
+          __COMMIT_SHA__
+          __TARGET_REPO__
+          __TARGET_BRANCH__
+          __MERGE_BASE__
+        replace-with: |-
+          ${{ inputs.upstream-repo-url }}
+          ${{ steps.get-repository-name.outputs.repository-name }}
+          ${{ inputs.upstream-branch }}
+          ${{ steps.get-upstream-sha.outputs.sha }}
+          ${{ inputs.target-repo }}
+          ${{ inputs.target-branch }}
+          ${merge_base}
+    
+    - name: Replace newline chars
+      uses: Cardinal-Cryptography/replace-string@v3
+      id: pr-body-for-json
+      with:
+        read-from-file: pr-body-to-add.txt
+        write-to-file: pr-body-for-json.txt
+        replace-regex: \n
+        replace-with: \\n
 
-        - Repository URL: ${{ inputs.upstream-repo-url }}
-        - Repository name: ${{ steps.get-repository-name.outputs.repository-name }}
-        - Branch: ${{ inputs.upstream-branch }}
-        - Commit SHA: ${{ steps.get-upstream-sha.outputs.sha }}
+    - name: Create JSON payload
+      uses: Cardinal-Cryptography/replace-string@v3
+      with:
+        read-from-file: ${{ github.action_path }}/gh-api-payload.json
+        write-to-file: gh-api-payload-to-send.json
+        replace-regex: |-
+          __TITLE__
+          __BODY__
+          __HEAD__
+          __BASE__
+        replace-with: |-
+          Merge upstream from ${{ steps.get-repository-name.outputs.repository-name }}@${{ inputs.upstream-branch }} (${{ steps.get-upstream-sha.outputs.sha }})
+          ${{ steps.pr-body-for-json.outputs.replaced-string }}
+          ${{ steps.get-pr-branch.outputs.pr-branch }}
+          ${{ inputs.target-branch }}
 
-        ## Target details
-
-        - Repository: ${{ inputs.target-repo }}
-        - Branch: ${{ inputs.target-branch }}
-        - Recent common ancestor with upstream: ${merge_base}
-
-        EOF
-        pr_body=$(cat pr_body.txt | tr '\n' '%' | sed 's|%|\\n|g')
-        
-        data="{\"title\":\"${pr_title}\",\"body\":\"${pr_body}\",\"head\":\"${pr_branch}\",\"base\":\"${{ inputs.target-branch }}\"}"
-
+    - name: Create pull request
+      shell: bash
+      run: |
         curl -L \
           -X POST \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ inputs.gh-ci-token }}" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
           https://api.github.com/repos/${{ inputs.target-repo }}/pulls \
-          -d "${data}" > tmp-curl-output.txt
+          -d @gh-api-payload-to-send.json > tmp-curl-output.txt
 
         # Wait a while to give GitHub action process things before we send another payload
         sleep 5
@@ -214,6 +242,44 @@ runs:
 
         echo "merge-failed=${merge_failed}" >> $GITHUB_OUTPUT
 
+    - name: Create failure slack notification
+      if: ${{ steps.check-if-merge-needed.outputs.merge == 'yes' && steps.merge-upstream.outputs.merge-failed == '1' }}
+      uses: Cardinal-Cryptography/replace-string@v3
+      with:
+        read-from-file: ${{ github.action_path }}/slack-msg-failure.json
+        write-to-file: slack-msg-failure-to-use.json
+        replace-regex: |-
+          __RUN_URL__
+          __TARGET__
+          __UPSTREAM__
+          __PULL_REQUEST_NUMBER__
+          __PULL_REQUEST_URL__
+        replace-with: |-
+          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          ${{ inputs.target-repo }}/${{ inputs.target-branch }}
+          ${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}
+          ${{ steps.create-pull-request.outputs.pull-request-number }}
+          ${{ steps.create-pull-request.outputs.pull-request-url }}
+
+    - name: Create success slack notification
+      if: ${{ steps.check-if-merge-needed.outputs.merge == 'yes' && steps.merge-upstream.outputs.merge-failed == '0' }}
+      uses: Cardinal-Cryptography/replace-string@v3
+      with:
+        read-from-file: ${{ github.action_path }}/slack-msg-failure.json
+        write-to-file: slack-msg-success-to-use.json
+        replace-regex: |-
+          __RUN_URL__
+          __TARGET__
+          __UPSTREAM__
+          __PULL_REQUEST_NUMBER__
+          __PULL_REQUEST_URL__
+        replace-with: |-
+          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          ${{ inputs.target-repo }}/${{ inputs.target-branch }}
+          ${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}
+          ${{ steps.create-pull-request.outputs.pull-request-number }}
+          ${{ steps.create-pull-request.outputs.pull-request-url }}
+
     - name: Send notification
       shell: bash
       if: ${{ inputs.slack-webhook-url != '' }}
@@ -223,20 +289,8 @@ runs:
           exit 0
         fi
 
-        run_url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-        target='${{ inputs.target-repo }}/${{ inputs.target-branch }}'
-        upstream='${{ inputs.upstream-repo-url }}@${{ inputs.upstream-branch }}'
-        pull_request_number='${{ steps.create-pull-request.outputs.pull-request-number }}'
-        pull_request_url='${{ steps.create-pull-request.outputs.pull-request-url }}'
         if [[ '${{ steps.merge-upstream.outputs.merge-failed }}' == '1' ]]; then
-          cat ${{ github.action_path }}/slack-msg-failure.json > tmp-slack-msg.json
+          curl -X POST -d @slack-msg-failure-to-use.json '${{ inputs.slack-webhook-url }}'
         else
-          cat ${{ github.action_path }}/slack-msg-success.json > tmp-slack-msg.json
+          curl -X POST -d @slack-msg-success-to-use.json '${{ inputs.slack-webhook-url }}'
         fi
-        sed -i "s|__RUN_URL__|${run_url}|g" tmp-slack-msg.json
-        sed -i "s|__TARGET__|${target}|g" tmp-slack-msg.json
-        sed -i "s|__UPSTREAM__|${upstream}|g" tmp-slack-msg.json
-        sed -i "s|__PULL_REQUEST_NUMBER__|${pull_request_number}|g" tmp-slack-msg.json
-        sed -i "s|__PULL_REQUEST_URL__|${pull_request_url}|g" tmp-slack-msg.json
-        
-        curl -X POST -d @tmp-slack-msg.json '${{ inputs.slack-webhook-url }}'

@@ -1,0 +1,13 @@
+# Merge upstream
+## Upstream details
+
+- Repository URL: __UPSTREAM_REPO_URL__
+- Repository name: __REPOSITORY_NAME__
+- Branch: __UPSTREAM_BRANCH__
+- Commit SHA: __COMMIT_SHA__
+
+## Target details
+
+- Repository: __TARGET_REPO__
+- Branch: __TARGET_BRANCH__
+- Recent common ancestor with upstream: __MERGE_BASE__
