@@ -51,6 +51,7 @@ try {
   if (inReplaceRegexArr.length > 1) {
     for (i=0; i<inReplaceRegexArr.length; i++) {
       const regex = new RegExp(inReplaceRegexArr[i], inFlags);
+      console.log('Replace '+regex+' with '+inReplaceWithArr[i])
       strReplaced = strToReplace.replace(regex, inReplaceWithArr[i]);
     }
   } else {
