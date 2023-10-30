@@ -118,7 +118,7 @@ runs:
 
     - name: Merge upstream
       shell: bash
-      id: create-pull-request
+      id: get-merge-base
       # yamllint enable rule:line-length
       run: |
         if [[ '${{ steps.check-if-merge-needed.outputs.merge }}' != 'yes' ]]; then
@@ -155,6 +155,9 @@ runs:
         # Wait a while to give GitHub action process things before we send another payload
         sleep 5
 
+        # Output merge-base
+        echo "merge-base=${merge_base}" >> $GITHUB_OUTPUT
+
     - name: Create PR body
       uses: Cardinal-Cryptography/replace-string@v3
       with:
@@ -175,7 +178,7 @@ runs:
           ${{ steps.get-upstream-sha.outputs.sha }}
           ${{ inputs.target-repo }}
           ${{ inputs.target-branch }}
-          ${merge_base}
+          ${{ steps.get-merge-base.outputs.merge-base }}
     
     - name: Replace newline chars
       uses: Cardinal-Cryptography/replace-string@v3
@@ -204,6 +207,7 @@ runs:
 
     - name: Create pull request
       shell: bash
+      id: create-pull-request
       run: |
         curl -L \
           -X POST \
