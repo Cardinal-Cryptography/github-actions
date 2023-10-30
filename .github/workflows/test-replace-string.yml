@@ -80,10 +80,12 @@ jobs:
         run: |
           if [[ ! -f tmp-write-to-file.txt ]]; then
             echo "!!! Action failed to create an output file"
+            exit 1
           fi
           output_from_file=$(cat tmp-write-to-file.txt);
           if [[ "${output_from_file}" != 'Cranberry and red apple' ]]; then
             echo "!!! Action failed to create an output file with replaced string"
+            exit 1
           fi
 
       - name: Create a dummy file with multiple variables
@@ -118,3 +120,20 @@ jobs:
       - name: Check multistring replacement
         run: |
           diff tmp-write-to-file-multiple.txt tmp-write-to-file-multiple-expected.txt
+
+      - name: Replace newline characters
+        uses: ./replace-string
+        id: replace-newlines
+        with:
+          read-from-file: 'tmp-read-from-file-multiple.txt'
+          replace-regex: \n
+          replace-with: %
+          write-to-file: 'tmp-write-to-file-multiple-newlines.txt'
+
+      - name: Check newline replacement
+        shell: bash
+        run: |
+          if [[ '${{ steps.replace-newlines.outputs.replaced-string }}' != 'Line without anything to replace%The following should contain an apple: __APPLE__ is red%And the following shall be \\'$AZERO\\': __CURRENCY__%Thanks!' ]]; then
+            echo "!!! Action failed to replace newline characters"
+            exit 1
+          fi
