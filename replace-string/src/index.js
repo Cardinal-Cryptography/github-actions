@@ -40,31 +40,30 @@ try {
   }
 
   // Action
-  strToReplace = '';
-  strEncoding = (inReadEncoding != '' ? inReadEncoding : 'utf-8');
+  outReplacedString = '';
+  outEncoding = (inReadEncoding != '' ? inReadEncoding : 'utf-8');
   if (inReadFromFile != '') {
-  	strToReplace = fs.readFileSync(inReadFromFile, strEncoding);
+  	outReplacedString = fs.readFileSync(inReadFromFile, outEncoding);
   } else {
-  	strToReplace = inString;
+  	outReplacedString = inString;
   }
 
   if (inReplaceRegexArr.length > 1) {
     for (i=0; i<inReplaceRegexArr.length; i++) {
       const regex = new RegExp(inReplaceRegexArr[i], inFlags);
-      console.log('Replace '+regex+' with '+inReplaceWithArr[i])
-      strReplaced = strToReplace.replace(regex, inReplaceWithArr[i]);
+      outReplacedString = outReplacedString.replace(regex, inReplaceWithArr[i]);
     }
   } else {
     const regex = new RegExp(inReplaceRegex, inFlags);
-    strReplaced = strToReplace.replace(regex, inReplaceWith);
+    outReplacedString = outReplacedString.replace(regex, inReplaceWith);
   }
 
   // Output
   if (inWriteToFile != '') {
-  	fs.writeFileSync(inWriteToFile, strReplaced);
+  	fs.writeFileSync(inWriteToFile, outReplacedString);
   }
 
-  core.setOutput('replaced-string', strReplaced);
+  core.setOutput('replaced-string', outReplacedString);
 } catch (error) {
   core.setFailed(error.message);
 }
