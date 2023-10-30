@@ -129,6 +129,7 @@ jobs:
           replace-regex: '\n'
           replace-with: '%'
           write-to-file: 'tmp-write-to-file-multiple-newlines.txt'
+          flags: g
 
       - name: Check newline replacement
         shell: bash
