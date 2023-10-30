@@ -90,15 +90,16 @@ jobs:
         id: from-file-with-multiple
         run: |
           cat >tmp-read-from-file-multiple.txt <<EOF
-            Line without anything to replace
-            The following should contain an apple: __APPLE__ is red
-            And the following shall be '$AZERO': __CURRENCY__
-            Thanks!
+          Line without anything to replace
+          The following should contain an apple: __APPLE__ is red
+          And the following shall be '$AZERO': __CURRENCY__
+          Thanks!
           EOF
+
           cat >tmp-write-to-file-multiple-expected.txt <<EOF
           Line without anything to replace
           The following should contain an apple: apple is red
-          And the following shall be '$AZERO': $AZERO
+          And the following shall be '\$AZERO': \$AZERO
           Thanks!
           EOF
 
@@ -111,7 +112,7 @@ jobs:
             __CURRENCY__
           replace-with: |-
             apple
-            $AZERO
+            \$AZERO
           write-to-file: 'tmp-write-to-file-multiple.txt'
 
       - name: Check multistring replacement
