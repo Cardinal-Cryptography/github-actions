@@ -14,33 +14,42 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  main:
-    name: Test validate-inputs action
+  checkout:
+    name: Checkout
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Call sub-workflow with valid inputs
-        uses: ./.github/workflows/_test-validate-inputs.yml
-        with:
-          number: 44
-          alphanumeric: abc123
-          fruit: lichi
+  check-valid-inputs:
+    needs: [check-vars-and-secrets]
+    name: Call sub-workflow with valid inputs
+    uses: ./.github/workflows/_test-validate-inputs.yml
+    with:
+      number: 44
+      alphanumeric: abc123
+      fruit: lichi
 
-      - name: Call sub-workflow with invalid inputs
-        uses: ./.github/workflows/_test-validate-inputs.yml
-        id: should-fail
-        continue-on-error: true
-        with:
-          number: a
-          alphanumeric: 34-a
-          fruit: lemon
+  check-invalid-inputs:
+    needs: [check-valid-inputs]
+    name: Call sub-workflow with invalid inputs
+    uses: ./.github/workflows/_test-validate-inputs.yml
+    id: should-fail
+    continue-on-error: true
+    with:
+      number: a
+      alphanumeric: 34-a
+      fruit: lemon
 
+  check-failure:
+    needs: [check-invalid-inputs]
+    name: Check failure
+    runs-on: ubuntu-20.04
+    steps:
       - name: Check failure
         shell: bash
         run: |
-          if [[ "${{ steps.should-fail.outcome }}" == "success" ]]; then
+          if [[ "${{ needs.should-fail.outcome }}" == "success" ]]; then
             echo "!!! Failure test failed.  Something fishy is going on here"
             exit 1
           fi
