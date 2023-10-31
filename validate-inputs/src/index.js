@@ -27,7 +27,7 @@ try {
   for (i=0; i<inNamesArr.length; i++) {
     const inputValue = core.getInput(inNamesArr[i]);
     const regex = new RegExp(inRegexpsArr[i], 'g')
-    if (!inputValue.match(regex)) {
+    if (!regex.text(inputValue)) {
       console.log('Input '+inNamesArr[i]+' value does not match regular expression of '+inRegexpsArr[i])
       invalidNames.push(inNamesArr[i]);
     }
