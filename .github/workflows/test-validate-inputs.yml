@@ -34,7 +34,6 @@ jobs:
     needs: [check-valid-inputs]
     name: Call sub-workflow with invalid inputs
     uses: ./.github/workflows/_test-validate-inputs.yml
-    id: should-fail
     continue-on-error: true
     with:
       number: a
@@ -49,7 +48,7 @@ jobs:
       - name: Check failure
         shell: bash
         run: |
-          if [[ "${{ needs.should-fail.outcome }}" == "success" ]]; then
+          if [[ "${{ needs.check-invalid-inputs.outcome }}" == "success" ]]; then
             echo "!!! Failure test failed.  Something fishy is going on here"
             exit 1
           fi
