@@ -8,7 +8,7 @@ on:
         description: A number
         required: true
         type: string
-      alphanumeric-string:
+      alphanumeric:
         description: An alphanumeric string
         required: true
         type: string
