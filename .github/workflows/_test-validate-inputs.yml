@@ -1,0 +1,42 @@
+---
+name: Test validate-inputs action sub-workflow
+
+on:
+  workflow_call:
+    inputs:
+      number:
+        description: A number
+        required: true
+        type: string
+      alphanumeric-string:
+        description: An alphanumeric string
+        required: true
+        type: string
+      fruit:
+        description: A fruit
+        required: true
+        type: string
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  main:
+    name: Test validate-inputs action
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Validate inputs
+        uses: ./validate-inputs
+        with:
+          names: |-
+            number
+            alphanumeric-string
+            fruit
+          regexps: |-
+            [0-9]+
+            [a-z0-9]+
+            apple|banana|lichi
