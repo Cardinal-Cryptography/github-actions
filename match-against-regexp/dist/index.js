@@ -30128,18 +30128,18 @@ const github = __nccwpck_require__(7364);
 const fs = __nccwpck_require__(7147)
 
 try {
-  const inNames = core.getInput('names');
+  const inValues = core.getInput('values');
   const inRegexps = core.getInput('regexps');
 
-  const inNamesArr = inNames.split(/\n/);
+  const inValuesArr = inValues.split(/\n/);
   const inRegexpsArr = inRegexps.split(/\n/);
 
-  if (inNamesArr.length == 0) {
-    throw new Error('Names cannot be empty')
+  if (inValuesArr.length == 0) {
+    throw new Error('Values cannot be empty')
   }
 
-  if (inNamesArr.length != inRegexpsArr.length) {
-    throw new Error('Number of names must match number of regular expressions');
+  if (inValuesArr.length != inRegexpsArr.length) {
+    throw new Error('Number of values must match number of regular expressions');
   }
   for (i=0; i<inRegexpsArr.length; i++) {
     if (inRegexpsArr[i] == '') {
@@ -30148,18 +30148,17 @@ try {
   }
 
   // Action
-  invalidNames = [];
-  for (i=0; i<inNamesArr.length; i++) {
-    const inputValue = core.getInput(inNamesArr[i]);
+  invalidValues = [];
+  for (i=0; i<inValuesArr.length; i++) {
     const regex = new RegExp(inRegexpsArr[i], '')
-    if (!regex.test(inputValue)) {
-      console.log('Input '+inNamesArr[i]+' value '+inputValue+' does not match regular expression of '+inRegexpsArr[i])
-      invalidNames.push(inNamesArr[i]);
+    if (!regex.test(inValuesArr[i])) {
+      console.log('Value '+i+' does not match regular expression of '+inRegexpsArr[i])
+      invalidValues.push(i);
     }
   }
 
-  if (invalidNames.length > 0) {
-    throw new Error('The following inputs have invalid values: ' + invalidNames.join(','))
+  if (invalidValues.length > 0) {
+    throw new Error('The following values do not match regular expressions: ' + invalidValues.join(','))
   }
 } catch (error) {
   core.setFailed(error.message);

@@ -1,7 +1,7 @@
 {
-    "name": "validate-inputs",
+    "name": "match-against-regexp",
     "version": "1.0.0",
-    "description": "Validates specified inputs",
+    "description": "Matches one-line values against regular expressions",
     "main": "index.js",
     "scripts": {
       "test": "echo \"Error: no test specified\" && exit 1"

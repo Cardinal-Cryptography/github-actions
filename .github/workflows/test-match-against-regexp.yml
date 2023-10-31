@@ -1,0 +1,56 @@
+---
+name: Test match-against-regexp action
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  main:
+    name: Test match-against-regexp action
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Check with valid values
+        uses: ./match-against-regexp
+        with:
+          names: |-
+            123
+            abd123
+            lichi
+          regexps: |-
+            [0-9]+
+            [a-z0-9]+
+            apple|banana|lichi
+
+      - name: Check with invalid values
+        id: should-fail
+        continue-on-error: true
+        uses: ./match-against-regexp
+        with:
+          names: |-
+            aaa
+            abd123
+            tomato
+          regexps: |-
+            [0-9]+
+            [a-z0-9]+
+            apple|banana|lichi
+
+      - name: Check failure
+        shell: bash
+        run: |
+          if [[ "${{ steps.should-fail.outcome }}" == "success" ]]; then
+            echo "!!! Failure test failed.  Something fishy is going on here"
+            exit 1
+          fi
