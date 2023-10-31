@@ -14,15 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  checkout:
-    name: Checkout
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
   check-valid-inputs:
-    needs: [check-vars-and-secrets]
     name: Call sub-workflow with valid inputs
     uses: ./.github/workflows/_test-validate-inputs.yml
     with:
