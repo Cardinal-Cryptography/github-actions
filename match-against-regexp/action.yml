@@ -1,0 +1,13 @@
+---
+name: Match against regexp
+description: This action matches one-line values against regular expression
+inputs:
+  values:
+    description: Values to be checked against regular expression. One per line
+    required: true
+  regexps:
+    description: Regular expressions to check against. One per line
+    required: true
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
