@@ -34,7 +34,6 @@ jobs:
     needs: [check-valid-inputs]
     name: Call sub-workflow with invalid inputs
     uses: ./.github/workflows/_test-validate-inputs.yml
-    continue-on-error: true
     with:
       number: a
       alphanumeric: 34-a
@@ -42,6 +41,7 @@ jobs:
 
   check-failure:
     needs: [check-invalid-inputs]
+    if: always()
     name: Check failure
     runs-on: ubuntu-20.04
     steps:
