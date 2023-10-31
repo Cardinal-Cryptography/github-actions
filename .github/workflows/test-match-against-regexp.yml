@@ -24,7 +24,7 @@ jobs:
       - name: Check with valid values
         uses: ./match-against-regexp
         with:
-          names: |-
+          values: |-
             123
             abd123
             lichi
@@ -38,7 +38,7 @@ jobs:
         continue-on-error: true
         uses: ./match-against-regexp
         with:
-          names: |-
+          values: |-
             aaa
             abd123
             tomato
