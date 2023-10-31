@@ -23,17 +23,18 @@ try {
   }
 
   // Action
-  invalidValues = [];
+  invalidNames = [];
   for (i=0; i<inNamesArr.length; i++) {
     const inputValue = core.getInput(inNamesArr[i]);
     const regex = new RegExp(inRegexpsArr[i], 'g')
     if (!inputValue.match(regex)) {
-      invalidValues.push(inNamesArr[i]);
+      console.log('Input '+inNamesArr[i]+' value does not match regular expression of '+inRegexpsArr[i])
+      invalidNames.push(inNamesArr[i]);
     }
   }
 
-  if (invalidValues.length > 0) {
-    throw new Error('The following inputs have invalid values: ' + invalidValues.join(','))
+  if (invalidNames.length > 0) {
+    throw new Error('The following inputs have invalid values: ' + invalidNames.join(','))
   }
 } catch (error) {
   core.setFailed(error.message);

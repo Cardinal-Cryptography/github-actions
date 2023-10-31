@@ -30,7 +30,7 @@ jobs:
         with:
           names: |-
             number
-            alphanumeric-string
+            alphanumeric
             fruit
           regexps: |-
             [0-9]+
