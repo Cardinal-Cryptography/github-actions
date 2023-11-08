@@ -159,7 +159,7 @@ runs:
         echo "merge-base=${merge_base}" >> $GITHUB_OUTPUT
 
     - name: Create PR body
-      uses: Cardinal-Cryptography/replace-string@v3
+      uses: Cardinal-Cryptography/github-actions/replace-string@v3
       with:
         read-from-file: ${{ github.action_path }}/pr-body.txt
         write-to-file: pr-body-to-add.txt
@@ -181,7 +181,7 @@ runs:
           ${{ steps.get-merge-base.outputs.merge-base }}
     
     - name: Replace newline chars
-      uses: Cardinal-Cryptography/replace-string@v3
+      uses: Cardinal-Cryptography/github-actions/replace-string@v3
       id: pr-body-for-json
       with:
         read-from-file: pr-body-to-add.txt
