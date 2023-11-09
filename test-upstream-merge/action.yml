@@ -188,6 +188,7 @@ runs:
         write-to-file: pr-body-for-json.txt
         replace-regex: \n
         replace-with: \\n
+        flags: g
 
     - name: Create JSON payload
       uses: Cardinal-Cryptography/github-actions/replace-string@v3
