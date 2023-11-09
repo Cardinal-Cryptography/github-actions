@@ -284,7 +284,7 @@ runs:
 
     - name: Send notification
       shell: bash
-      if: ${{ inputs.slack-webhook-url != '' && steps.check-if-merge-needed.outputs.merge != 'yes' }}
+      if: ${{ inputs.slack-webhook-url != '' && steps.check-if-merge-needed.outputs.merge == 'yes' }}
       run: |
         if [[ '${{ steps.merge-upstream.outputs.merge-failed }}' == '1' ]]; then
           curl -X POST -d @slack-msg-failure-to-use.json '${{ inputs.slack-webhook-url }}'
