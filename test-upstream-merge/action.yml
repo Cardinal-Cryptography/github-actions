@@ -104,12 +104,8 @@ runs:
 
     - name: Add upstream
       shell: bash
+      if: ${{ steps.check-if-merge-needed.outputs.merge == 'yes' }}
       run: |
-        if [[ '${{ steps.check-if-merge-needed.outputs.merge }}' != 'yes' ]]; then
-          echo 'There is nothing to do.'
-          exit 0
-        fi
-
         cd target
         git remote add upstream '${{ inputs.upstream-repo-url }}'
         git fetch upstream
@@ -118,14 +114,10 @@ runs:
 
     - name: Merge upstream
       shell: bash
+      if: ${{ steps.check-if-merge-needed.outputs.merge == 'yes' }}
       id: get-merge-base
       # yamllint enable rule:line-length
       run: |
-        if [[ '${{ steps.check-if-merge-needed.outputs.merge }}' != 'yes' ]]; then
-          echo 'There is nothing to do.'
-          exit 0
-        fi
-
         cd target
         git config user.name '${{ inputs.git-commit-author }}'
         git config user.email '${{ inputs.git-commit-author }}'
@@ -160,6 +152,7 @@ runs:
 
     - name: Create PR body
       uses: Cardinal-Cryptography/github-actions/replace-string@v3
+      if: ${{ steps.check-if-merge-needed.outputs.merge == 'yes' }}
       with:
         read-from-file: ${{ github.action_path }}/pr-body.txt
         write-to-file: pr-body-to-add.txt
@@ -182,6 +175,7 @@ runs:
     
     - name: Replace newline chars
       uses: Cardinal-Cryptography/github-actions/replace-string@v3
+      if: ${{ steps.check-if-merge-needed.outputs.merge == 'yes' }}
       id: pr-body-for-json
       with:
         read-from-file: pr-body-to-add.txt
@@ -194,6 +188,7 @@ runs:
 
     - name: Create JSON payload
       uses: Cardinal-Cryptography/github-actions/replace-string@v3
+      if: ${{ steps.check-if-merge-needed.outputs.merge == 'yes' }}
       with:
         read-from-file: ${{ github.action_path }}/gh-api-payload.json
         write-to-file: gh-api-payload-to-send.json
@@ -210,6 +205,7 @@ runs:
 
     - name: Create pull request
       shell: bash
+      if: ${{ steps.check-if-merge-needed.outputs.merge == 'yes' }}
       id: create-pull-request
       run: |
         # replace-string action is unable to replace with literal '\n' (meaning 2 chars)
@@ -227,19 +223,15 @@ runs:
         sleep 5
 
         # Set outputs for further steps
-        echo "pull-request-number=$(cat tmp-curl-output.txt | jq '.number')" >> $GITHUB_OUTPUT
-        echo "pull-request-url=$(cat tmp-curl-output.txt | jq '.html_url')" >> $GITHUB_OUTPUT
+        echo "pull-request-number=$(cat tmp-curl-output.txt | jq -r '.number')" >> $GITHUB_OUTPUT
+        echo "pull-request-url=$(cat tmp-curl-output.txt | jq -r '.html_url')" >> $GITHUB_OUTPUT
       # yamllint disable rule:line-length
 
     - name: Check for conflicts
       shell: bash
       id: merge-upstream
+      if: ${{ steps.check-if-merge-needed.outputs.merge == 'yes' }}
       run: |
-        if [[ '${{ steps.check-if-merge-needed.outputs.merge }}' != 'yes' ]]; then
-          echo 'There is nothing to do.'
-          exit 0
-        fi
-
         cd target
         git checkout '${{ inputs.target-branch }}'
 
@@ -292,13 +284,8 @@ runs:
 
     - name: Send notification
       shell: bash
-      if: ${{ inputs.slack-webhook-url != '' }}
+      if: ${{ inputs.slack-webhook-url != '' && steps.check-if-merge-needed.outputs.merge == 'yes' }}
       run: |
-        if [[ '${{ steps.check-if-merge-needed.outputs.merge }}' != 'yes' ]]; then
-          echo 'There is nothing to do.'
-          exit 0
-        fi
-
         if [[ '${{ steps.merge-upstream.outputs.merge-failed }}' == '1' ]]; then
           curl -X POST -d @slack-msg-failure-to-use.json '${{ inputs.slack-webhook-url }}'
         else
