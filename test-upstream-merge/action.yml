@@ -189,7 +189,7 @@ runs:
         replace-regex: \n
         # Javascript cannot make a replacement with literal '\n' (meaning 2 characters, 
         # not newline char)
-        replace-with: @NEW_LINE_ALEPHZERO@
+        replace-with: '@NEW_LINE_ALEPHZERO@'
         flags: g
 
     - name: Create JSON payload
