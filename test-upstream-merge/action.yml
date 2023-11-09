@@ -104,7 +104,7 @@ runs:
 
     - name: Add upstream
       shell: bash
-      if: ${{ steps.check-if-merge-needed.outputs.merge != 'yes' }}
+      if: ${{ steps.check-if-merge-needed.outputs.merge == 'yes' }}
       run: |
         cd target
         git remote add upstream '${{ inputs.upstream-repo-url }}'
@@ -114,7 +114,7 @@ runs:
 
     - name: Merge upstream
       shell: bash
-      if: ${{ steps.check-if-merge-needed.outputs.merge != 'yes' }}
+      if: ${{ steps.check-if-merge-needed.outputs.merge == 'yes' }}
       id: get-merge-base
       # yamllint enable rule:line-length
       run: |
@@ -152,7 +152,7 @@ runs:
 
     - name: Create PR body
       uses: Cardinal-Cryptography/github-actions/replace-string@v3
-      if: ${{ steps.check-if-merge-needed.outputs.merge != 'yes' }}
+      if: ${{ steps.check-if-merge-needed.outputs.merge == 'yes' }}
       with:
         read-from-file: ${{ github.action_path }}/pr-body.txt
         write-to-file: pr-body-to-add.txt
@@ -175,7 +175,7 @@ runs:
     
     - name: Replace newline chars
       uses: Cardinal-Cryptography/github-actions/replace-string@v3
-      if: ${{ steps.check-if-merge-needed.outputs.merge != 'yes' }}
+      if: ${{ steps.check-if-merge-needed.outputs.merge == 'yes' }}
       id: pr-body-for-json
       with:
         read-from-file: pr-body-to-add.txt
@@ -188,7 +188,7 @@ runs:
 
     - name: Create JSON payload
       uses: Cardinal-Cryptography/github-actions/replace-string@v3
-      if: ${{ steps.check-if-merge-needed.outputs.merge != 'yes' }}
+      if: ${{ steps.check-if-merge-needed.outputs.merge == 'yes' }}
       with:
         read-from-file: ${{ github.action_path }}/gh-api-payload.json
         write-to-file: gh-api-payload-to-send.json
@@ -205,7 +205,7 @@ runs:
 
     - name: Create pull request
       shell: bash
-      if: ${{ steps.check-if-merge-needed.outputs.merge != 'yes' }}
+      if: ${{ steps.check-if-merge-needed.outputs.merge == 'yes' }}
       id: create-pull-request
       run: |
         # replace-string action is unable to replace with literal '\n' (meaning 2 chars)
@@ -230,7 +230,7 @@ runs:
     - name: Check for conflicts
       shell: bash
       id: merge-upstream
-      if: ${{ steps.check-if-merge-needed.outputs.merge != 'yes' }}
+      if: ${{ steps.check-if-merge-needed.outputs.merge == 'yes' }}
       run: |
         cd target
         git checkout '${{ inputs.target-branch }}'
