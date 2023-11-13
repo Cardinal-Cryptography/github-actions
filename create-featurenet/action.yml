@@ -267,6 +267,7 @@ runs:
         message: "Upsert featurenet ${{ inputs.featurenet-name }} with image: ${{ inputs.featurenet-aleph-node-image != '' && inputs.featurenet-aleph-node-image || steps.get-ref-properties.outputs.branch-name-for-argo-with-sha }}"
         add: '["*.yaml","*.txt"]'
         cwd: "${{ inputs.repo-featurenets-name }}"
+        pull: '--rebase --autostash'
 
     - name: Refresh Argo and wait for the creation to be finished
       shell: bash
