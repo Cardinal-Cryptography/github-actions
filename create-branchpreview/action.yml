@@ -39,7 +39,7 @@ inputs:
 outputs:
   app-name:
     description: |
-      App name based on repo and branch with a prefix, used in ArgoCD app, 
+      App name based on repo and branch with a prefix, used in ArgoCD app,
       URLs etc.
     value: ${{ steps.start-branchpreview.outputs.app-name }}
   safe-branch-name:
@@ -119,6 +119,7 @@ runs:
         message: 'Upsert ${{ inputs.repository-name }}:${{ inputs.branch-name }} with image tag: ${{ steps.start-branchpreview.outputs.image-tag }}'
         add: '["*.yaml","*.txt"]'
         cwd: '${{ inputs.repo-branchpreviews-name }}'
+        pull: '--rebase --autostash'
 
     - name: Refresh Argo and wait for the creation to be finished
       shell: bash

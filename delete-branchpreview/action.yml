@@ -87,6 +87,7 @@ runs:
         message: 'Delete branchpreview ${{ inputs.repository-name }}:${{ inputs.branch-name }}'
         add: '["*.yaml","*.txt"]'
         cwd: '${{ inputs.repo-branchpreviews-name }}'
+        pull: '--rebase --autostash'
 
     # we need self-hosted runner only because of this step
     - name: Refresh Argo and wait for the deletion to be finished
