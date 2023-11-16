@@ -246,9 +246,9 @@ runs:
           "--aleph-node-image=${fnet_aleph_node_image}" \
           "--bootstrap-node-image-tag=${fnet_bootstrap_chain_node_image}" \
           '--replicas=${{ inputs.replicas }}' \
-          '--internal=${{ inputs.internal == 'true' && 'true' || 'false' }}' | tee -a tmp-opssh-createfeaturenet-output.txt \
+          '--internal=${{ inputs.internal == 'true' && 'true' || 'false' }}' \
           '--rolling-update-partition=${{ inputs.rolling-update-partition }}' \
-          "--create-hook=${fnet_create_hook}"
+          "--create-hook=${fnet_create_hook}" | tee -a tmp-opssh-createfeaturenet-output.txt
 
         ws_hostname=$(cat tmp-opssh-createfeaturenet-output.txt | grep '^__output:ws-hostname:' | cut -d: -f3)
         echo "ws-hostname=${ws_hostname}" >> $GITHUB_OUTPUT
