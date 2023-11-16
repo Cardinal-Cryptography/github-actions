@@ -176,7 +176,7 @@ runs:
         repository: Cardinal-Cryptography/${{ inputs.repo-featurenet-template-name }}
         token: ${{ inputs.gh-ci-token }}
         path: "${{ inputs.repo-featurenet-template-name }}"
-        ref: compatibility
+        ref: main
         fetch-depth: 0
 
     - name: Get compatible featurenet template version
@@ -192,10 +192,23 @@ runs:
           exit 1
         fi
         echo "featurenet-template-tag=${featurenet_template_tag}" >> $GITHUB_OUTPUT
-
-        echo "Checking out ${featurenet_template_tag}..."
-        git checkout "${featurenet_template_tag}"
       # yamllint enable rule:line-length
+
+    - name: Check if current featurenet is upgradable
+      shell: bash
+      run: |
+        # Check if featurenet already exists
+        tag_file='${{ inputs.repo-featurenets-name }}/fe-${{ inputs.featurenet-name }}.tag.txt'
+        if [[ -f "${tag_file}" ]]; then
+          cur_fe_ver=$(cat "${tag_file}")
+          # If current version is not upgradable then we cannot proceed.  Upgrade has to been
+          # done manually
+          fe_tpl_ver_nonupgradable_file="${{ inputs.repo-featurenet-template-name }}/${cur_fe_ver}/nonupgradable"
+          if [[ -f "${fe_tpl_ver_nonupgradable_file}" ]]; then
+            echo "Unfortunately version ${cur_fe_ver} of featurenet is not upgradable!"
+            exit 1
+          fi
+        fi
 
     - name: Start featurenet from PR branch
       id: start-featurenet
@@ -204,7 +217,7 @@ runs:
       env:
         OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
-        cd '${{ inputs.repo-featurenet-template-name }}'
+        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}'
         # featurenet creation from commit from PR
         if [[ '${{ inputs.featurenet-aleph-node-image }}' == '' ]]; then
           pr_image_tag='fe-${{ steps.get-ref-properties.outputs.branch-name-for-argo-with-sha }}'
@@ -225,14 +238,17 @@ runs:
           # Disabling hook here as work in progress
           fnet_create_hook='false'
         fi
+
+        # Below needs to be compatible with all the versions of Ops.sh.  Hence the argument are named and can be passed
+        # in any order
         ./Ops.sh create-featurenet \
-          '${{ inputs.featurenet-name }}' \
-          "${fnet_aleph_node_image}" \
-          "${fnet_bootstrap_chain_node_image}" \
-          '${{ inputs.rolling-update-partition }}' \
-          "${fnet_create_hook}" \
-          '${{ inputs.replicas }}' \
-          '${{ inputs.internal == 'true' && 'true' || 'false' }}' | tee -a tmp-opssh-createfeaturenet-output.txt
+          '--featurenet-name=${{ inputs.featurenet-name }}' \
+          "--aleph-node-image=${fnet_aleph_node_image}" \
+          "--bootstrap-node-image-tag=${fnet_bootstrap_chain_node_image}" \
+          '--replicas=${{ inputs.replicas }}' \
+          '--internal=${{ inputs.internal == 'true' && 'true' || 'false' }}' | tee -a tmp-opssh-createfeaturenet-output.txt \
+          '--rolling-update-partition=${{ inputs.rolling-update-partition }}' \
+          "--create-hook=${fnet_create_hook}"
 
         ws_hostname=$(cat tmp-opssh-createfeaturenet-output.txt | grep '^__output:ws-hostname:' | cut -d: -f3)
         echo "ws-hostname=${ws_hostname}" >> $GITHUB_OUTPUT
@@ -244,7 +260,7 @@ runs:
       env:
         OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
-        cd '${{ inputs.repo-featurenet-template-name }}'
+        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}'
         ./Ops.sh create-featurenet-expiration \
           '${{ inputs.featurenet-name }}' \
           '${{ inputs.expiration }}'
@@ -273,7 +289,7 @@ runs:
       env:
         OPSSH_TARGETPATH: "${{ github.workspace }}/${{ inputs.repo-featurenets-name }}"
       run: |
-        cd '${{ inputs.repo-featurenet-template-name }}'
+        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}'
         ./Ops.sh refresh-featurenets '${{ inputs.argo-host }}' \
           '${{ inputs.argo-sync-user-token }}' \
           '${{ inputs.featurenet-name }}' \
@@ -285,5 +301,5 @@ runs:
       env:
         OPSSH_TARGETPATH: "${{ github.workspace }}/${{ inputs.repo-featurenets-name }}"
       run: |
-        cd '${{ inputs.repo-featurenet-template-name }}'
+        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}'
         ./Ops.sh wait-for-finalized-heads '${{ steps.start-featurenet.outputs.ws-hostname }}'

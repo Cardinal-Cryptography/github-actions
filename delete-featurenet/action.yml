@@ -91,7 +91,7 @@ runs:
         repository: Cardinal-Cryptography/${{ inputs.repo-featurenet-template-name }}
         token: ${{ inputs.gh-ci-token }}
         path: "${{ inputs.repo-featurenet-template-name }}"
-        ref: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}
+        ref: main
         fetch-depth: 0
 
     - name: Configure AWS credentials
@@ -108,7 +108,7 @@ runs:
       env:
         OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
-        cd '${{ inputs.repo-featurenet-template-name }}'
+        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}'
         ./Ops.sh delete-featurenet '${{ steps.get-final-name.outputs.final-featurenet-name }}'
       # yamllint enable rule:line-length
 
@@ -127,7 +127,7 @@ runs:
       env:
         OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
-        cd '${{ inputs.repo-featurenet-template-name }}'
+        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}'
         ./Ops.sh refresh-featurenets '${{ inputs.argo-host }}' \
           '${{ inputs.argo-sync-user-token }}'
 
