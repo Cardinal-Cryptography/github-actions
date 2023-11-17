@@ -194,21 +194,43 @@ runs:
         echo "featurenet-template-tag=${featurenet_template_tag}" >> $GITHUB_OUTPUT
       # yamllint enable rule:line-length
 
-    - name: Check if current featurenet is upgradable
+    - name: Get featurenet template tag and check if upgradable
       shell: bash
+      id: get-featurenet-upgradable
       run: |
+        fe_upgradable='true'
+        fe_tpl_tag_cur=''
+
         # Check if featurenet already exists
         tag_file='${{ inputs.repo-featurenets-name }}/fe-${{ inputs.featurenet-name }}.tag.txt'
         if [[ -f "${tag_file}" ]]; then
           cur_fe_ver=$(cat "${tag_file}")
-          # If current version is not upgradable then we cannot proceed.  Upgrade has to been
-          # done manually
+          fe_tpl_tag_cur="${cur_fe_ver}"
+
+          # If current version is not upgradable then we cannot change version.  Update has to be performed
+          # with the same version.
           fe_tpl_ver_nonupgradable_file="${{ inputs.repo-featurenet-template-name }}/${cur_fe_ver}/nonupgradable"
           if [[ -f "${fe_tpl_ver_nonupgradable_file}" ]]; then
             echo "Unfortunately version ${cur_fe_ver} of featurenet is not upgradable!"
-            exit 1
+            fe_upgradable='false'
           fi
         fi
+
+        echo "featurenet-upgradable=${fe_upgradable}" >> $GITHUB_OUTPUT
+        echo "featurenet-template-tag-current=${fe_tpl_tag_cur}" >> $GITHUB_OUTPUT
+
+    - name: Get featurenet template tag directory
+      shell: bash
+      id: get-featurenet-template-dir
+      run: |
+        # Get featurenet template version (tag) subdirectory.  If current version is nonupgradable then
+        # the same version must be used.
+        fe_tpl_dir='${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}'
+        if [[ '${{ steps.get-featurenet-upgradable.outputs.featurenet-upgradable }}' == 'false' ]]; then
+          fe_tpl_dir='${{ steps.get-featurenet-upgradable.outputs.featurenet-template-tag-current }}'
+        fi
+
+        echo "featurenet-template-dir=${fe_tpl_dir}" >> $GITHUB_OUTPUT
 
     - name: Start featurenet from PR branch
       id: start-featurenet
@@ -217,7 +239,7 @@ runs:
       env:
         OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
-        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}'
+        cd "${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-dir.outputs.featurenet-template-dir }}"
         # featurenet creation from commit from PR
         if [[ '${{ inputs.featurenet-aleph-node-image }}' == '' ]]; then
           pr_image_tag='fe-${{ steps.get-ref-properties.outputs.branch-name-for-argo-with-sha }}'
@@ -260,7 +282,7 @@ runs:
       env:
         OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
-        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}'
+        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-dir.outputs.featurenet-template-dir }}'
         ./Ops.sh create-featurenet-expiration \
           '${{ inputs.featurenet-name }}' \
           '${{ inputs.expiration }}'
@@ -270,7 +292,7 @@ runs:
       # yamllint disable rule:line-length
       run: |
         cd '${{ inputs.repo-featurenets-name }}'
-        echo '${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}' \
+        echo '${{ steps.get-featurenet-template-dir.outputs.featurenet-template-dir }}' \
           > fe-${{ inputs.featurenet-name }}.tag.txt
       # yamllint enable rule:line-length
 
@@ -289,7 +311,7 @@ runs:
       env:
         OPSSH_TARGETPATH: "${{ github.workspace }}/${{ inputs.repo-featurenets-name }}"
       run: |
-        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}'
+        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-dir.outputs.featurenet-template-dir }}'
         ./Ops.sh refresh-featurenets '${{ inputs.argo-host }}' \
           '${{ inputs.argo-sync-user-token }}' \
           '${{ inputs.featurenet-name }}' \
@@ -301,5 +323,5 @@ runs:
       env:
         OPSSH_TARGETPATH: "${{ github.workspace }}/${{ inputs.repo-featurenets-name }}"
       run: |
-        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}'
+        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-dir.outputs.featurenet-template-dir }}'
         ./Ops.sh wait-for-finalized-heads '${{ steps.start-featurenet.outputs.ws-hostname }}'
