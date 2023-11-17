@@ -65,20 +65,20 @@ jobs:
       - name: Validate inputs
         shell: bash
         run: |
-          if [[ ! "${{ inputs.featurenet-name }}" =~ ^[a-z0-9][a-z0-9\-]{4,44}$ ]]; then
+          if [[ ! '${{ inputs.featurenet-name }}' =~ ^[a-z0-9][a-z0-9\-]{4,44}$ ]]; then
             echo "!!! Invalid featurenet name"
             exit 1
           fi
           if [[
-            "${{ inputs.destination }}" != "" && \
-            ! "${{ inputs.destination }}" =~ ^[a-f0-9]{7}$
+            '${{ inputs.destination }}' != "" && \
+            ! '${{ inputs.destination }}' =~ ^[a-f0-9]{7}$
           ]]; then
             echo "!!! Expected a 7-byte SHA in destination parameter"
             exit 1
           fi
           if [[
-            "${{ inputs.rolling-update-partition }}" != "" && \
-            ! "${{ inputs.rolling-update-partition }}" =~ ^[0-9]$ \
+            '${{ inputs.rolling-update-partition }}' != "" && \
+            ! '${{ inputs.rolling-update-partition }}' =~ ^[0-9]$ \
           ]]; then
             echo "!!! Expected rolling update partition to be a cardinal value from 0 to 9"
             exit 1
