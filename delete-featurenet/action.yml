@@ -72,7 +72,7 @@ runs:
           featurenet_template_tag=$(cat 'fe-${{ inputs.featurenet-name }}.tag.txt')
           if [[ -z "${featurenet_template_tag}" ]]; then
             featurenet_template_tag=''
-          fi 
+          fi
         fi
         echo "featurenet-template-tag=${featurenet_template_tag}" >> $GITHUB_OUTPUT
 
@@ -114,6 +114,7 @@ runs:
         message: "Delete featurenet ${{ inputs.featurenet-name }}"
         add: '["*.yaml","*.txt"]'
         cwd: "${{ inputs.repo-featurenets-name }}"
+        pull: '--rebase --autostash'
 
     # we need self-hosted runner only because of this step
     - name: Refresh Argo and wait for the deletion to be finished
