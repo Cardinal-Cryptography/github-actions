@@ -54,15 +54,6 @@ runs:
           exit 1
         fi
 
-    - name: Get final featurenet name
-      id: get-final-name
-      shell: bash
-      # yamllint disable rule:line-length
-      run: |
-        final_name_local='${{ inputs.featurenet-name }}'
-        echo "final-featurenet-name=$final_name_local" >> $GITHUB_OUTPUT
-      # yamllint enable rule:line-length
-
     - name: Checkout featurenets repo
       uses: actions/checkout@v3
       with:
@@ -76,22 +67,23 @@ runs:
       id: get-featurenet-template-tag
       run: |
         cd '${{ inputs.repo-featurenets-name }}'
-        featurenet_template_tag=main
-        if [[ -f 'fe-${{ steps.get-final-name.outputs.final-featurenet-name }}.tag.txt' ]]; then
-          featurenet_template_tag=$(cat 'fe-${{ steps.get-final-name.outputs.final-featurenet-name }}.tag.txt')
+        featurenet_template_tag=''
+        if [[ -f 'fe-${{ inputs.featurenet-name }}.tag.txt' ]]; then
+          featurenet_template_tag=$(cat 'fe-${{ inputs.featurenet-name }}.tag.txt')
           if [[ -z "${featurenet_template_tag}" ]]; then
-            featurenet_template_tag=main
+            featurenet_template_tag=''
           fi
         fi
         echo "featurenet-template-tag=${featurenet_template_tag}" >> $GITHUB_OUTPUT
 
     - name: Checkout featurenet template repo
+      if: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag != '' }}
       uses: actions/checkout@v3
       with:
         repository: Cardinal-Cryptography/${{ inputs.repo-featurenet-template-name }}
         token: ${{ inputs.gh-ci-token }}
         path: "${{ inputs.repo-featurenet-template-name }}"
-        ref: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}
+        ref: main
         fetch-depth: 0
 
     - name: Configure AWS credentials
@@ -103,32 +95,35 @@ runs:
         aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
         aws-region: ${{ env.AWS_REGION }}
 
-    - name: Destroy feature branch
+    - name: Destroy featurenet files
+      if: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag != '' }}
       shell: bash
       env:
         OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
-        cd '${{ inputs.repo-featurenet-template-name }}'
-        ./Ops.sh delete-featurenet '${{ steps.get-final-name.outputs.final-featurenet-name }}'
+        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}'
+        ./Ops.sh delete-featurenet '${{ inputs.featurenet-name }}'
       # yamllint enable rule:line-length
 
-    - name: Commit deletion of the feature environment.
+    - name: Commit deletion of the feature environment
+      if: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag != '' }}
       uses: EndBug/add-and-commit@v9.1.1
       with:
         author_name: "${{ inputs.git-commit-author }}"
         author_email: "${{ inputs.git-commit-email }}"
-        message: "Delete featurenet ${{ steps.get-final-name.outputs.final-featurenet-name }}"
+        message: "Delete featurenet ${{ inputs.featurenet-name }}"
         add: '["*.yaml","*.txt"]'
         cwd: "${{ inputs.repo-featurenets-name }}"
         pull: '--rebase --autostash'
 
     # we need self-hosted runner only because of this step
     - name: Refresh Argo and wait for the deletion to be finished
+      if: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag != '' }}
       shell: bash
       env:
         OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
-        cd '${{ inputs.repo-featurenet-template-name }}'
+        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}'
         ./Ops.sh refresh-featurenets '${{ inputs.argo-host }}' \
           '${{ inputs.argo-sync-user-token }}'
 
@@ -140,6 +135,6 @@ runs:
           -e AWS_SECRET_ACCESS_KEY \
           -e AWS_REGION \
           -e 'FEATURENETS_S3_BUCKET_NAME=${{ inputs.featurenet-keys-s3bucket-name }}' \
-          -e 'FEATURENET_NAME=fe-${{ steps.get-final-name.outputs.final-featurenet-name }}' \
-          '${{ inputs.ecr-public-registry }}featurenet-helper:v0.4.0' \
+          -e 'FEATURENET_NAME=fe-${{ inputs.featurenet-name }}' \
+          '${{ inputs.ecr-public-registry }}featurenet-helper:v0.7.0' \
           delete-featurenet-data-from-s3
