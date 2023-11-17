@@ -83,7 +83,7 @@ runs:
         repository: Cardinal-Cryptography/${{ inputs.repo-featurenet-template-name }}
         token: ${{ inputs.gh-ci-token }}
         path: "${{ inputs.repo-featurenet-template-name }}"
-        ref: A0-3266-add-aleph-node-archivist
+        ref: main
         fetch-depth: 0
 
     - name: Configure AWS credentials
@@ -136,5 +136,5 @@ runs:
           -e AWS_REGION \
           -e 'FEATURENETS_S3_BUCKET_NAME=${{ inputs.featurenet-keys-s3bucket-name }}' \
           -e 'FEATURENET_NAME=fe-${{ inputs.featurenet-name }}' \
-          '${{ inputs.ecr-public-registry }}featurenet-helper:v0.4.0' \
+          '${{ inputs.ecr-public-registry }}featurenet-helper:v0.7.0' \
           delete-featurenet-data-from-s3

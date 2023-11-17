@@ -176,7 +176,7 @@ runs:
         repository: Cardinal-Cryptography/${{ inputs.repo-featurenet-template-name }}
         token: ${{ inputs.gh-ci-token }}
         path: "${{ inputs.repo-featurenet-template-name }}"
-        ref: A0-3266-add-aleph-node-archivist
+        ref: main
         fetch-depth: 0
 
     - name: Get compatible featurenet template version
