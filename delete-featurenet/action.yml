@@ -123,16 +123,10 @@ runs:
       env:
         OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
-        if [[ '${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}' == 'v4' ]]; then
-          docker run --pull always --rm \
-            '${{ inputs.ecr-public-registry }}featurenet-helper:A0-3516-refactor' \
-            refresh-featurenets '${{ inputs.argo-host }}' '${{ inputs.argo-sync-user-token }}'
-          exit 0
-        fi
-
-        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}'
-        ./Ops.sh refresh-featurenets '${{ inputs.argo-host }}' \
-          '${{ inputs.argo-sync-user-token }}'
+        docker run --pull always --rm \
+          '${{ inputs.ecr-public-registry }}featurenet-helper:A0-3516-refactor' \
+          refresh-featurenets '${{ inputs.argo-host }}' '${{ inputs.argo-sync-user-token }}'
+        exit 0
 
     - name: Clean S3 storage
       shell: bash

@@ -312,21 +312,13 @@ runs:
       env:
         OPSSH_TARGETPATH: "${{ github.workspace }}/${{ inputs.repo-featurenets-name }}"
       run: |
-        if [[ '${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}' == 'v4' ]]; then
-          docker run --pull always --rm \
-            '${{ inputs.ecr-public-registry }}featurenet-helper:A0-3516-refactor' \
-            refresh-featurenets \
-              '${{ inputs.argo-host }}' \
-              '${{ inputs.argo-sync-user-token }}' \
-              '${{ inputs.featurenet-name }}'
-          exit 0
-        fi
-
-        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-dir.outputs.featurenet-template-dir }}'
-        ./Ops.sh refresh-featurenets '${{ inputs.argo-host }}' \
-          '${{ inputs.argo-sync-user-token }}' \
-          '${{ inputs.featurenet-name }}' \
-          '${{ inputs.hard-refresh == 'true' && 'true' || 'false' }}'
+        docker run --pull always --rm \
+          '${{ inputs.ecr-public-registry }}featurenet-helper:A0-3516-refactor' \
+          refresh-featurenets \
+            '${{ inputs.argo-host }}' \
+            '${{ inputs.argo-sync-user-token }}' \
+            '${{ inputs.featurenet-name }}'
+        exit 0
 
     - name: Wait for the unique consecutive finalized heads
       if: inputs.wait-for-finalized-heads == 'true'
