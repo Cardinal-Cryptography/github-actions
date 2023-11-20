@@ -312,6 +312,13 @@ runs:
       env:
         OPSSH_TARGETPATH: "${{ github.workspace }}/${{ inputs.repo-featurenets-name }}"
       run: |
+        if [[ '${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}' == 'v4' ]]; then
+          docker run --rm \
+            '${{ inputs.ecr-public-registry }}featurenet-helper:A0-3516-refactor' \
+            refresh-featurenets '${{ inputs.argo-host }}' '${{ inputs.argo-sync-user-token }}'
+          exit 0
+        fi
+
         cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-dir.outputs.featurenet-template-dir }}'
         ./Ops.sh refresh-featurenets '${{ inputs.argo-host }}' \
           '${{ inputs.argo-sync-user-token }}' \
@@ -324,5 +331,7 @@ runs:
       env:
         OPSSH_TARGETPATH: "${{ github.workspace }}/${{ inputs.repo-featurenets-name }}"
       run: |
-        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-dir.outputs.featurenet-template-dir }}'
-        ./Ops.sh wait-for-finalized-heads '${{ steps.start-featurenet.outputs.ws-hostname }}'
+        docker run --rm \
+          '${{ inputs.ecr-public-registry }}featurenet-helper:A0-3516-refactor' \
+          wait-for-finalized-heads '${{ steps.start-featurenet.outputs.ws-hostname }}'
+
