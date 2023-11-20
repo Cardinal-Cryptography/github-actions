@@ -315,7 +315,10 @@ runs:
         if [[ '${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}' == 'v4' ]]; then
           docker run --pull always --rm \
             '${{ inputs.ecr-public-registry }}featurenet-helper:A0-3516-refactor' \
-            refresh-featurenets '${{ inputs.argo-host }}' '${{ inputs.argo-sync-user-token }}'
+            refresh-featurenets \
+              '${{ inputs.argo-host }}' \
+              '${{ inputs.argo-sync-user-token }}' \
+              '${{ inputs.featurenet-name }}'
           exit 0
         fi
 
