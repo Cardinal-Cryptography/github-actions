@@ -179,27 +179,6 @@ runs:
           git checkout '${{ steps.get-ref-properties.outputs.branch }}'
         fi
 
-    - name: Get compatible featurenet template version
-      id: get-featurenet-template-tag
-      shell: bash
-      # yamllint disable rule:line-length
-      run: |
-        cd '${{ inputs.repo-featurenet-template-name }}'
-
-        ./get-template-tag.sh \
-            '${{ github.workspace }}/aleph-node-compatibility' \
-            '${{ github.workspace }}/${{ inputs.repo-featurenets-name }}' \
-            '${{ inputs.featurenet-name }}' \
-          > tmp-output.txt
-
-        featurenet_template_tag=$(cat tmp-output.txt)
-        if [[ -z "${featurenet_template_tag}" ]]; then
-          echo '!!! Error in getting compatible featurenet template tag'
-          exit 1
-        fi
-        echo "featurenet-template-tag=${featurenet_template_tag}" >> $GITHUB_OUTPUT
-      # yamllint enable rule:line-length
-
     - name: Start featurenet from PR branch
       id: start-featurenet
       shell: bash
