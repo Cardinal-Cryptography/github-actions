@@ -62,20 +62,6 @@ runs:
         path: "${{ inputs.repo-featurenets-name }}"
         ref: main
 
-    - name: Get feature template tag
-      shell: bash
-      id: get-featurenet-template-tag
-      run: |
-        cd '${{ inputs.repo-featurenets-name }}'
-        featurenet_template_tag=''
-        if [[ -f 'fe-${{ inputs.featurenet-name }}.tag.txt' ]]; then
-          featurenet_template_tag=$(cat 'fe-${{ inputs.featurenet-name }}.tag.txt')
-          if [[ -z "${featurenet_template_tag}" ]]; then
-            featurenet_template_tag=''
-          fi
-        fi
-        echo "featurenet-template-tag=${featurenet_template_tag}" >> $GITHUB_OUTPUT
-
     - name: Checkout featurenet template repo
       if: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag != '' }}
       uses: actions/checkout@v3
@@ -101,8 +87,11 @@ runs:
       env:
         OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
-        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}'
-        ./Ops.sh delete-featurenet '${{ inputs.featurenet-name }}'
+        cd '${{ inputs.repo-featurenet-template-name }}'
+
+        ./delete-featurenet.sh \
+          '--featurenets-repo=${{ github.workspace }}/${{ inputs.repo-featurenets-name }}' \
+          '--featurenet-name=${{ inputs.featurenet-name }}'
       # yamllint enable rule:line-length
 
     - name: Commit deletion of the feature environment
@@ -123,8 +112,9 @@ runs:
       env:
         OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
-        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}'
-        ./Ops.sh refresh-featurenets '${{ inputs.argo-host }}' \
+        cd '${{ inputs.repo-featurenet-template-name }}'
+
+        ./refresh-featurenets.sh '${{ inputs.argo-host }}' \
           '${{ inputs.argo-sync-user-token }}'
 
     - name: Clean S3 storage
