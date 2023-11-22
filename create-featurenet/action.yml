@@ -203,16 +203,14 @@ runs:
         fi
 
         ./create-featurenet.sh \
-          '--get-compatible-version' \
-            '--aleph-node-repo=${{ github.workspace }}/aleph-node-compatibility' \
-            '--featurenets-repo=${{ github.workspace }}/${{ inputs.repo-featurenets-name }}' \
-          '--featurenet-name=${{ inputs.featurenet-name }}' \
-          "--aleph-node-image=${fnet_aleph_node_image}" \
-          '--replicas=${{ inputs.replicas }}' \
-          '--internal=${{ inputs.internal == 'true' && 'true' || 'false' }}' \
-          '--rolling-update-partition=${{ inputs.rolling-update-partition }}' \
-          '--expiration=${{ inputs.expiration }}' \
-        | tee -a tmp-opssh-createfeaturenet-output.txt
+          '${{ github.workspace }}/${{ inputs.repo-featurenets-name }}' \
+          '${{ inputs.featurenet-name }}' \
+          "${fnet_aleph_node_image}" \
+          '${{ inputs.replicas }}' \
+          '${{ inputs.rolling-update-partition }}' \
+          '${{ inputs.expiration }}' \
+          -c '${{ github.workspace }}/aleph-node-compatibility' \
+          ${{ inputs.internal == 'true' && '-i' || '' }} | tee -a tmp-opssh-createfeaturenet-output.txt
 
         ws_hostname=$(cat tmp-opssh-createfeaturenet-output.txt | grep '^__output:ws-hostname:' | cut -d: -f3)
         echo "ws-hostname=${ws_hostname}" >> $GITHUB_OUTPUT
@@ -236,7 +234,7 @@ runs:
       run: |
         cd '${{ inputs.repo-featurenet-template-name }}'
 
-        ./refresh-featurenets.sh '${{ inputs.argo-host }}' \
+        ./refresh-featurenets.sh \
           '${{ inputs.argo-sync-user-token }}' \
           '${{ inputs.featurenet-name }}'
 
@@ -248,4 +246,4 @@ runs:
       run: |
         cd '${{ inputs.repo-featurenet-template-name }}'
 
-        ./wait-for-finalized-heads.sh '${{ steps.start-featurenet.outputs.ws-hostname }}'
+        ./wait-for-featurenet-finalized-heads.sh '${{ inputs.featurenet-name }}'

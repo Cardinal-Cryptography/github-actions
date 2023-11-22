@@ -90,9 +90,8 @@ runs:
         cd '${{ inputs.repo-featurenet-template-name }}'
 
         ./delete-featurenet.sh \
-          '--featurenets-repo=${{ github.workspace }}/${{ inputs.repo-featurenets-name }}' \
-          '--featurenet-name=${{ inputs.featurenet-name }}'
-      # yamllint enable rule:line-length
+          '${{ github.workspace }}/${{ inputs.repo-featurenets-name }}' \
+          '${{ inputs.featurenet-name }}'
 
     - name: Commit deletion of the feature environment
       if: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag != '' }}
@@ -114,17 +113,11 @@ runs:
       run: |
         cd '${{ inputs.repo-featurenet-template-name }}'
 
-        ./refresh-featurenets.sh '${{ inputs.argo-host }}' \
-          '${{ inputs.argo-sync-user-token }}'
+        ./refresh-featurenets.sh '${{ inputs.argo-sync-user-token }}'
 
     - name: Clean S3 storage
       shell: bash
       run: |
-        docker run --rm \
-          -e AWS_ACCESS_KEY_ID \
-          -e AWS_SECRET_ACCESS_KEY \
-          -e AWS_REGION \
-          -e 'FEATURENETS_S3_BUCKET_NAME=${{ inputs.featurenet-keys-s3bucket-name }}' \
-          -e 'FEATURENET_NAME=fe-${{ inputs.featurenet-name }}' \
-          '${{ inputs.ecr-public-registry }}featurenet-helper:v0.7.0' \
-          delete-featurenet-data-from-s3
+        cd '${{ inputs.repo-featurenet-template-name }}'
+
+        ./delete-featurenet-data-from-s3.sh '${{ inputs.featurenet-name }}'
