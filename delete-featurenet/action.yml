@@ -21,12 +21,6 @@ inputs:
   ecr-public-registry:
     description: "ECR public registry, with slash at the end, eg. 'public.ecr.aws/something/'"
     required: true
-  featurenet-keys-s3bucket-name:
-    description: 'S3 bucket name with featurenet keys'
-    required: true
-  argo-host:
-    description: 'ArgoCD host'
-    required: true
   argo-sync-user-token:
     description: 'ArgoCD user token to be used in the action'
     required: true
@@ -84,8 +78,6 @@ runs:
     - name: Destroy featurenet files
       if: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag != '' }}
       shell: bash
-      env:
-        OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
         cd '${{ inputs.repo-featurenet-template-name }}'
 
@@ -108,8 +100,6 @@ runs:
     - name: Refresh Argo and wait for the deletion to be finished
       if: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag != '' }}
       shell: bash
-      env:
-        OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
         cd '${{ inputs.repo-featurenet-template-name }}'
 

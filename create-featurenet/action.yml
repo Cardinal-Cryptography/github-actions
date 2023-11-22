@@ -15,17 +15,11 @@ inputs:
   repo-featurenet-template-name:
     description: 'Name of the repository containing featurenet template'
     required: true
-  argo-host:
-    description: 'ArgoCD host'
-    required: true
   argo-sync-user-token:
     description: 'ArgoCD user token to be used in the action'
     required: true
   ecr-public-registry:
     description: "ECR public registry, with slash at the end, eg. 'public.ecr.aws/something/'"
-    required: true
-  featurenet-keys-s3bucket-name:
-    description: 'S3 bucket name with featurenet keys'
     required: true
   featurenet-name:
     description: 'Name of featurenet'
@@ -62,10 +56,6 @@ inputs:
     default: "5"
   internal:
     description: 'Internal network, accessible from VPN only'
-    required: false
-    default: "false"
-  hard-refresh:
-    description: 'Make hard-refresh of ArgoCD application'
     required: false
     default: "false"
   wait-for-finalized-heads:
@@ -183,8 +173,6 @@ runs:
       id: start-featurenet
       shell: bash
       # yamllint disable rule:line-length
-      env:
-        OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
         cd '${{ inputs.repo-featurenet-template-name }}'
 
@@ -229,8 +217,6 @@ runs:
 
     - name: Refresh Argo and wait for the creation to be finished
       shell: bash
-      env:
-        OPSSH_TARGETPATH: "${{ github.workspace }}/${{ inputs.repo-featurenets-name }}"
       run: |
         cd '${{ inputs.repo-featurenet-template-name }}'
 
@@ -241,8 +227,6 @@ runs:
     - name: Wait for the unique consecutive finalized heads
       if: inputs.wait-for-finalized-heads == 'true'
       shell: bash
-      env:
-        OPSSH_TARGETPATH: "${{ github.workspace }}/${{ inputs.repo-featurenets-name }}"
       run: |
         cd '${{ inputs.repo-featurenet-template-name }}'
 
