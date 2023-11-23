@@ -151,7 +151,7 @@ runs:
         repository: Cardinal-Cryptography/${{ inputs.repo-featurenet-template-name }}
         token: ${{ inputs.gh-ci-token }}
         path: "${{ inputs.repo-featurenet-template-name }}"
-        ref: main
+        ref: A0-3467-unify-featurenet-creation
         fetch-depth: 0
 
     - name: Checkout aleph-node commit repo and get featurenet template tag
