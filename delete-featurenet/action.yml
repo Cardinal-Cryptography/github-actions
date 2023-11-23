@@ -57,7 +57,6 @@ runs:
         ref: main
 
     - name: Checkout featurenet template repo
-      if: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag != '' }}
       uses: actions/checkout@v3
       with:
         repository: Cardinal-Cryptography/${{ inputs.repo-featurenet-template-name }}
