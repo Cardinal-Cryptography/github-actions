@@ -76,7 +76,6 @@ runs:
         aws-region: ${{ env.AWS_REGION }}
 
     - name: Destroy featurenet files
-      if: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag != '' }}
       shell: bash
       run: |
         cd '${{ inputs.repo-featurenet-template-name }}'
@@ -86,7 +85,6 @@ runs:
           '${{ inputs.featurenet-name }}'
 
     - name: Commit deletion of the feature environment
-      if: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag != '' }}
       uses: EndBug/add-and-commit@v9.1.1
       with:
         author_name: "${{ inputs.git-commit-author }}"
@@ -98,7 +96,6 @@ runs:
 
     # we need self-hosted runner only because of this step
     - name: Refresh Argo and wait for the deletion to be finished
-      if: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag != '' }}
       shell: bash
       run: |
         cd '${{ inputs.repo-featurenet-template-name }}'
