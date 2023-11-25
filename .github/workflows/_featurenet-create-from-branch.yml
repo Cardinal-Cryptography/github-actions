@@ -62,12 +62,12 @@ jobs:
         if: contains(github.event.pull_request.labels.*.name, 'state:created-featurenet')
         uses: Cardinal-Cryptography/github-actions/delete-featurenet@A0-3467-unify-featurenet-creation
         with:
+          gh-ci-user: ${{ secrets.CI_GH_USER }}
           gh-ci-token: ${{ secrets.CI_GH_TOKEN }}
           aws-access-key-id: ${{ secrets.AWS_DEVNET_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_DEVNET_SECRET_ACCESS_KEY }}
           ecr-public-registry: ${{ vars.ECR_PUBLIC_REGISTRY }}
           argo-sync-user-token: ${{ secrets.ARGO_SYNC_USER_TOKEN }}
-          repo-featurenets-name: ${{ secrets.REPO_OPS_FEATURENETS_NAME }}
           repo-featurenet-template-name: ${{ secrets.REPO_FEATURENET_TEMPLATE_NAME }}
           featurenet-name: ${{ inputs.featurenet-name }}
           git-commit-author: ${{ secrets.AUTOCOMMIT_AUTHOR }}
@@ -87,9 +87,9 @@ jobs:
         uses: Cardinal-Cryptography/github-actions/create-featurenet@A0-3467-unify-featurenet-creation
         id: create-featurenet
         with:
+          gh-ci-user: ${{ secrets.CI_GH_USER }}
           gh-ci-token: ${{ secrets.CI_GH_TOKEN }}
           argo-sync-user-token: ${{ secrets.ARGO_SYNC_USER_TOKEN }}
-          repo-featurenets-name: ${{ secrets.REPO_OPS_FEATURENETS_NAME }}
           repo-featurenet-template-name: ${{ secrets.REPO_FEATURENET_TEMPLATE_NAME }}
           ecr-public-registry: ${{ vars.ECR_PUBLIC_REGISTRY }}
           expiration: ${{ inputs.expiration }}

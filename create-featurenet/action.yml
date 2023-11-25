@@ -6,11 +6,11 @@ description: |
   * spawns new update net from a node image that is on ECR, prpduction one (normal session)
   * upgrades featurenet binary to a given version
 inputs:
+  gh-ci-user:
+    description: 'GH user to be used in the action'
+    required: true
   gh-ci-token:
     description: 'GH token to be used in the action'
-    required: true
-  repo-featurenets-name:
-    description: 'Name of the repository containing featurenets manifests'
     required: true
   repo-featurenet-template-name:
     description: 'Name of the repository containing featurenet template'
@@ -141,7 +141,7 @@ runs:
       id: start-featurenet
       shell: bash
       env:
-        GITHUB_USERNAME: aleph-ci-user
+        GITHUB_USERNAME: ${{ inputs.gh-ci-user }}
         GITHUB_TOKEN: ${{ inputs.gh-ci-token }}
         GIT_COMMIT_USER_NAME: ${{ inputs.git-commit-author }}
         GIT_COMMIT_USER_EMAIL: ${{ inputs.git-commit-email }}
@@ -181,9 +181,7 @@ runs:
       run: |
         cd '${{ inputs.repo-featurenet-template-name }}'
 
-        ./refresh-featurenets.sh \
-          '${{ inputs.argo-sync-user-token }}' \
-          '${{ inputs.featurenet-name }}'
+        ./refresh-featurenets.sh '${{ inputs.argo-sync-user-token }}' '${{ inputs.featurenet-name }}'
 
     - name: Wait for the unique consecutive finalized heads
       if: inputs.wait-for-finalized-heads == 'true'

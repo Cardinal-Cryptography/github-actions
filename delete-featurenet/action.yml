@@ -3,11 +3,11 @@ name: Delete featurenet
 description: Deletes featurenet
 
 inputs:
+  gh-ci-user:
+    description: 'GH user to be used in the action'
+    required: true
   gh-ci-token:
     description: 'GH token to be used in the action'
-    required: true
-  repo-featurenets-name:
-    description: 'Name of the repository containing featurenets manifests'
     required: true
   repo-featurenet-template-name:
     description: 'Name of the repository containing featurenet template'
@@ -48,14 +48,6 @@ runs:
           exit 1
         fi
 
-    - name: Checkout featurenets repo
-      uses: actions/checkout@v3
-      with:
-        repository: Cardinal-Cryptography/${{ inputs.repo-featurenets-name }}
-        token: ${{ inputs.gh-ci-token }}
-        path: "${{ inputs.repo-featurenets-name }}"
-        ref: main
-
     - name: Checkout featurenet template repo
       uses: actions/checkout@v3
       with:
@@ -76,22 +68,15 @@ runs:
 
     - name: Destroy featurenet files
       shell: bash
+      env:
+        GITHUB_USERNAME: ${{ inputs.gh-ci-user }}
+        GITHUB_TOKEN: ${{ inputs.gh-ci-token }}
+        GIT_COMMIT_USER_NAME: ${{ inputs.git-commit-author }}
+        GIT_COMMIT_USER_EMAIL: ${{ inputs.git-commit-email }}
       run: |
         cd '${{ inputs.repo-featurenet-template-name }}'
 
-        ./delete-featurenet.sh \
-          '${{ github.workspace }}/${{ inputs.repo-featurenets-name }}' \
-          '${{ inputs.featurenet-name }}'
-
-    - name: Commit deletion of the feature environment
-      uses: EndBug/add-and-commit@v9.1.1
-      with:
-        author_name: "${{ inputs.git-commit-author }}"
-        author_email: "${{ inputs.git-commit-email }}"
-        message: "Delete featurenet ${{ inputs.featurenet-name }}"
-        add: '["*.yaml","*.txt"]'
-        cwd: "${{ inputs.repo-featurenets-name }}"
-        pull: '--rebase --autostash'
+        ./delete-featurenet.sh -g '${{ inputs.featurenet-name }}'
 
     # we need self-hosted runner only because of this step
     - name: Refresh Argo and wait for the deletion to be finished
