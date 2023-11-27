@@ -66,7 +66,6 @@ jobs:
           gh-ci-token: ${{ secrets.CI_GH_TOKEN }}
           aws-access-key-id: ${{ secrets.AWS_DEVNET_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_DEVNET_SECRET_ACCESS_KEY }}
-          ecr-public-registry: ${{ vars.ECR_PUBLIC_REGISTRY }}
           argo-sync-user-token: ${{ secrets.ARGO_SYNC_USER_TOKEN }}
           repo-featurenet-template-name: ${{ secrets.REPO_FEATURENET_TEMPLATE_NAME }}
           featurenet-name: ${{ inputs.featurenet-name }}
@@ -91,7 +90,6 @@ jobs:
           gh-ci-token: ${{ secrets.CI_GH_TOKEN }}
           argo-sync-user-token: ${{ secrets.ARGO_SYNC_USER_TOKEN }}
           repo-featurenet-template-name: ${{ secrets.REPO_FEATURENET_TEMPLATE_NAME }}
-          ecr-public-registry: ${{ vars.ECR_PUBLIC_REGISTRY }}
           expiration: ${{ inputs.expiration }}
           replicas: ${{ inputs.replicas }}
           internal: ${{ inputs.internal && 'true' || 'false' }}

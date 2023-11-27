@@ -18,9 +18,6 @@ inputs:
   argo-sync-user-token:
     description: 'ArgoCD user token to be used in the action'
     required: true
-  ecr-public-registry:
-    description: "ECR public registry, with slash at the end, eg. 'public.ecr.aws/something/'"
-    required: true
   featurenet-name:
     description: 'Name of featurenet'
     required: true
@@ -82,9 +79,7 @@ runs:
         fi
         if [[
           '${{ inputs.featurenet-aleph-node-image }}' != "" && \
-          ! '${{ inputs.featurenet-aleph-node-image }}' =~ ^[a-f0-9]{7}$ && \
-          '${{ inputs.featurenet-aleph-node-image }}' != "testnet" && \
-          '${{ inputs.featurenet-aleph-node-image }}' != "mainnet"
+          ! '${{ inputs.featurenet-aleph-node-image }}' =~ ^[a-f0-9]{7}$
         ]]
         then
           echo "!!! Invalid featurenet node image tag"
@@ -120,14 +115,6 @@ runs:
       id: get-ref-properties
       uses: Cardinal-Cryptography/github-actions/get-ref-properties@v1
 
-    - name: Get node commit SHA
-      if: ${{ inputs.featurenet-aleph-node-image == 'testnet' ||
-        inputs.featurenet-aleph-node-image == 'mainnet' }}
-      id: get-node-commit-sha
-      uses: Cardinal-Cryptography/github-actions/get-node-system-version@v1
-      with:
-        env: ${{ inputs.featurenet-aleph-node-image }}
-
     - name: Checkout featurenet template repo
       uses: actions/checkout@v3
       with:
@@ -151,16 +138,9 @@ runs:
 
         # featurenet creation from commit from PR
         if [[ '${{ inputs.featurenet-aleph-node-image }}' == '' ]]; then
-          pr_image_tag='fe-${{ steps.get-ref-properties.outputs.branch-name-for-argo-with-sha }}'
-          fnet_aleph_node_image="${{ inputs.ecr-public-registry }}feature-env-aleph-node:${pr_image_tag}"
-        # updatenet creation from Testnet or Mainnet image
-        elif [[ '${{ inputs.featurenet-aleph-node-image }}' == 'testnet' || \
-            '${{ inputs.featurenet-aleph-node-image }}' == 'mainnet' ]]; then
-          ecr_image_tag='${{ steps.get-node-commit-sha.outputs.sha }}'
-          fnet_aleph_node_image="${{ inputs.ecr-public-registry }}aleph-node:${ecr_image_tag}"
-        # updatenet update, ie updating binary to given version and runtime update
+          fnet_aleph_node_image='fe-${{ steps.get-ref-properties.outputs.branch-name-for-argo-with-sha }}'
         else
-          fnet_aleph_node_image='${{ inputs.ecr-public-registry }}aleph-node:${{ inputs.featurenet-aleph-node-image }}'
+          fnet_aleph_node_image='${{ inputs.featurenet-aleph-node-image }}'
         fi
 
         ./create-featurenet.sh \
@@ -170,7 +150,8 @@ runs:
           '${{ inputs.rolling-update-partition }}' \
           '${{ inputs.expiration }}' \
           ${{ inputs.internal == 'true' && '-i' || '' }} \
-          -c -g | tee -a tmp-opssh-createfeaturenet-output.txt
+          -c -g \
+          ${{ inputs.featurenet-aleph-node-image == '' && '-f' || '' }} | tee -a tmp-opssh-createfeaturenet-output.txt
 
         ws_hostname=$(cat tmp-opssh-createfeaturenet-output.txt | grep '^__output:ws-hostname:' | cut -d: -f3)
         echo "ws-hostname=${ws_hostname}" >> $GITHUB_OUTPUT

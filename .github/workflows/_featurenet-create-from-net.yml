@@ -44,6 +44,10 @@ jobs:
             echo '!!! Invalid featurenet name'
             exit 1
           fi
+          if [[ '${{ inputs.start }}' != 'testnet' && '${{ inputs.start }}' != 'mainnet' ]]; then
+            echo "!!! Invalid network to start, should be 'testnet' or 'mainnet'"
+            exit 1
+          fi
         # yamllint enable rule:line-length
 
   check-vars-and-secrets:
@@ -70,7 +74,6 @@ jobs:
           gh-ci-token: ${{ secrets.CI_GH_TOKEN }}
           aws-access-key-id: ${{ secrets.AWS_DEVNET_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_DEVNET_SECRET_ACCESS_KEY }}
-          ecr-public-registry: ${{ vars.ECR_PUBLIC_REGISTRY }}
           argo-sync-user-token: ${{ secrets.ARGO_SYNC_USER_TOKEN }}
           repo-featurenet-template-name: ${{ secrets.REPO_FEATURENET_TEMPLATE_NAME }}
           featurenet-name: ${{ inputs.featurenet-name }}
@@ -87,6 +90,12 @@ jobs:
           override: true
           debug: true
 
+      - name: Get node commit SHA
+        id: get-node-commit-sha
+        uses: Cardinal-Cryptography/github-actions/get-node-system-version@v1
+        with:
+          env: ${{ inputs.start }}
+
       - name: Create featurenet from scratch, node binary from testnet or mainnet
         uses: Cardinal-Cryptography/github-actions/create-featurenet@A0-3467-unify-featurenet-creation
         id: create-featurenet
@@ -95,9 +104,8 @@ jobs:
           gh-ci-token: ${{ secrets.CI_GH_TOKEN }}
           argo-sync-user-token: ${{ secrets.ARGO_SYNC_USER_TOKEN }}
           repo-featurenet-template-name: ${{ secrets.REPO_FEATURENET_TEMPLATE_NAME }}
-          ecr-public-registry: ${{ vars.ECR_PUBLIC_REGISTRY }}
           featurenet-name: ${{ inputs.featurenet-name }}
-          featurenet-aleph-node-image: ${{ inputs.start == 'mainnet' && 'mainnet' || 'testnet' }}
+          featurenet-aleph-node-image: ${{ steps.get-node-commit-sha.outputs.sha }}
           expiration: ${{ inputs.expiration }}
           replicas: ${{ inputs.replicas }}
           internal: ${{ inputs.internal && 'true' || 'false' }}

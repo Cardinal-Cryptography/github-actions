@@ -18,9 +18,6 @@ inputs:
   aws-secret-access-key:
     description: 'AWS Secret Access Key to be used in the action'
     required: true
-  ecr-public-registry:
-    description: "ECR public registry, with slash at the end, eg. 'public.ecr.aws/something/'"
-    required: true
   argo-sync-user-token:
     description: 'ArgoCD user token to be used in the action'
     required: true
