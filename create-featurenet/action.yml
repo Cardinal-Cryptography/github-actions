@@ -28,13 +28,13 @@ inputs:
     description: 'Git commit email when pushing to featurenets repository'
     required: true
   featurenet-aleph-node-image:
-    description: |
-      Set featurenet image either to:
-       * 'testnet' or 'mainnet' - to Testnet or Mainnet image respectively,
-       * a 7 byte SHA - to exisiting ECR aleph-node image tag
-       * empty value - to image built from PR
-    required: false
+    description: 'aleph-node docker image tag'
+    required: true
     default: ''
+  featurenet-ecr-repo:
+    description: 'Use featurenets ECR repository instead of aleph-node'
+    required: false
+    default: 'false'
   expiration:
     description: 'Time after which updatenet will be removed'
     required: false
@@ -78,8 +78,7 @@ runs:
           exit 1
         fi
         if [[
-          '${{ inputs.featurenet-aleph-node-image }}' != "" && \
-          ! '${{ inputs.featurenet-aleph-node-image }}' =~ ^[a-f0-9]{7}$
+          ! '${{ inputs.featurenet-aleph-node-image }}' =~ ^[a-z0-9][a-z0-9\.]{1,48}$
         ]]
         then
           echo "!!! Invalid featurenet node image tag"
@@ -111,10 +110,6 @@ runs:
           exit 1
         fi
 
-    - name: Get branch name and commit SHA
-      id: get-ref-properties
-      uses: Cardinal-Cryptography/github-actions/get-ref-properties@v1
-
     - name: Checkout featurenet template repo
       uses: actions/checkout@v3
       with:
@@ -136,22 +131,15 @@ runs:
       run: |
         cd '${{ inputs.repo-featurenet-template-name }}'
 
-        # featurenet creation from commit from PR
-        if [[ '${{ inputs.featurenet-aleph-node-image }}' == '' ]]; then
-          fnet_aleph_node_image='fe-${{ steps.get-ref-properties.outputs.branch-name-for-argo-with-sha }}'
-        else
-          fnet_aleph_node_image='${{ inputs.featurenet-aleph-node-image }}'
-        fi
-
         ./create-featurenet.sh \
           '${{ inputs.featurenet-name }}' \
-          "${fnet_aleph_node_image}" \
+          '${{ inputs.featurenet-aleph-node-image }}' \
           '${{ inputs.replicas }}' \
           '${{ inputs.rolling-update-partition }}' \
           '${{ inputs.expiration }}' \
           ${{ inputs.internal == 'true' && '-i' || '' }} \
-          -c -g \
-          ${{ inputs.featurenet-aleph-node-image == '' && '-f' || '' }} | tee -a tmp-opssh-createfeaturenet-output.txt
+          ${{ inputs.featurenet-ecr-repo == 'true' && '-f' || '' }} \
+          -c -g | tee -a tmp-opssh-createfeaturenet-output.txt
 
         ws_hostname=$(cat tmp-opssh-createfeaturenet-output.txt | grep '^__output:ws-hostname:' | cut -d: -f3)
         echo "ws-hostname=${ws_hostname}" >> $GITHUB_OUTPUT
