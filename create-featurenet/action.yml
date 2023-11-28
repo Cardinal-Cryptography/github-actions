@@ -119,7 +119,7 @@ runs:
         ref: A0-3467-unify-featurenet-creation
         fetch-depth: 0
 
-    - name: Start featurenet from PR branch
+    - name: Start featurenet
       id: start-featurenet
       shell: bash
       env:
