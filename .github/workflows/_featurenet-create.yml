@@ -84,7 +84,7 @@ jobs:
 
       - name: Delete old featurenet app and data
         if: ${{ inputs.delete-first == 'true' }}
-        uses: Cardinal-Cryptography/github-actions/delete-featurenet@A0-3467-unify-featurenet-creation
+        uses: Cardinal-Cryptography/github-actions/delete-featurenet@v5
         with:
           gh-ci-user: ${{ secrets.CI_GH_USER }}
           gh-ci-token: ${{ secrets.CI_GH_TOKEN }}
@@ -114,7 +114,7 @@ jobs:
           env: ${{ inputs.aleph-node-image }}
 
       - name: Upsert featurenet with image tag
-        uses: Cardinal-Cryptography/github-actions/create-featurenet@A0-3467-unify-featurenet-creation
+        uses: Cardinal-Cryptography/github-actions/create-featurenet@v5
         id: create-featurenet
         with:
           gh-ci-user: ${{ secrets.CI_GH_USER }}

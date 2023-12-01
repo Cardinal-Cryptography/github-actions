@@ -116,7 +116,7 @@ runs:
         repository: Cardinal-Cryptography/${{ inputs.repo-featurenet-template-name }}
         token: ${{ inputs.gh-ci-token }}
         path: "${{ inputs.repo-featurenet-template-name }}"
-        ref: A0-3467-unify-featurenet-creation
+        ref: main
 
     - name: Start featurenet
       id: start-featurenet
