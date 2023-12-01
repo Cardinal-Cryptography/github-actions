@@ -3,11 +3,11 @@ name: Delete featurenet
 description: Deletes featurenet
 
 inputs:
+  gh-ci-user:
+    description: 'GH user to be used in the action'
+    required: true
   gh-ci-token:
     description: 'GH token to be used in the action'
-    required: true
-  repo-featurenets-name:
-    description: 'Name of the repository containing featurenets manifests'
     required: true
   repo-featurenet-template-name:
     description: 'Name of the repository containing featurenet template'
@@ -17,15 +17,6 @@ inputs:
     required: true
   aws-secret-access-key:
     description: 'AWS Secret Access Key to be used in the action'
-    required: true
-  ecr-public-registry:
-    description: "ECR public registry, with slash at the end, eg. 'public.ecr.aws/something/'"
-    required: true
-  featurenet-keys-s3bucket-name:
-    description: 'S3 bucket name with featurenet keys'
-    required: true
-  argo-host:
-    description: 'ArgoCD host'
     required: true
   argo-sync-user-token:
     description: 'ArgoCD user token to be used in the action'
@@ -54,37 +45,13 @@ runs:
           exit 1
         fi
 
-    - name: Checkout featurenets repo
-      uses: actions/checkout@v3
-      with:
-        repository: Cardinal-Cryptography/${{ inputs.repo-featurenets-name }}
-        token: ${{ inputs.gh-ci-token }}
-        path: "${{ inputs.repo-featurenets-name }}"
-        ref: main
-
-    - name: Get feature template tag
-      shell: bash
-      id: get-featurenet-template-tag
-      run: |
-        cd '${{ inputs.repo-featurenets-name }}'
-        featurenet_template_tag=''
-        if [[ -f 'fe-${{ inputs.featurenet-name }}.tag.txt' ]]; then
-          featurenet_template_tag=$(cat 'fe-${{ inputs.featurenet-name }}.tag.txt')
-          if [[ -z "${featurenet_template_tag}" ]]; then
-            featurenet_template_tag=''
-          fi
-        fi
-        echo "featurenet-template-tag=${featurenet_template_tag}" >> $GITHUB_OUTPUT
-
     - name: Checkout featurenet template repo
-      if: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag != '' }}
       uses: actions/checkout@v3
       with:
         repository: Cardinal-Cryptography/${{ inputs.repo-featurenet-template-name }}
         token: ${{ inputs.gh-ci-token }}
         path: "${{ inputs.repo-featurenet-template-name }}"
         ref: main
-        fetch-depth: 0
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
@@ -96,45 +63,28 @@ runs:
         aws-region: ${{ env.AWS_REGION }}
 
     - name: Destroy featurenet files
-      if: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag != '' }}
       shell: bash
       env:
-        OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
+        GITHUB_USERNAME: ${{ inputs.gh-ci-user }}
+        GITHUB_TOKEN: ${{ inputs.gh-ci-token }}
+        GIT_COMMIT_USER_NAME: ${{ inputs.git-commit-author }}
+        GIT_COMMIT_USER_EMAIL: ${{ inputs.git-commit-email }}
       run: |
-        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}'
-        ./Ops.sh delete-featurenet '${{ inputs.featurenet-name }}'
-      # yamllint enable rule:line-length
+        cd '${{ inputs.repo-featurenet-template-name }}'
 
-    - name: Commit deletion of the feature environment
-      if: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag != '' }}
-      uses: EndBug/add-and-commit@v9.1.1
-      with:
-        author_name: "${{ inputs.git-commit-author }}"
-        author_email: "${{ inputs.git-commit-email }}"
-        message: "Delete featurenet ${{ inputs.featurenet-name }}"
-        add: '["*.yaml","*.txt"]'
-        cwd: "${{ inputs.repo-featurenets-name }}"
-        pull: '--rebase --autostash'
+        ./delete-featurenet.sh -g '${{ inputs.featurenet-name }}'
 
     # we need self-hosted runner only because of this step
     - name: Refresh Argo and wait for the deletion to be finished
-      if: ${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag != '' }}
       shell: bash
-      env:
-        OPSSH_TARGETPATH: ${{ github.workspace }}/${{ inputs.repo-featurenets-name }}
       run: |
-        cd '${{ inputs.repo-featurenet-template-name }}/${{ steps.get-featurenet-template-tag.outputs.featurenet-template-tag }}'
-        ./Ops.sh refresh-featurenets '${{ inputs.argo-host }}' \
-          '${{ inputs.argo-sync-user-token }}'
+        cd '${{ inputs.repo-featurenet-template-name }}'
+
+        ./refresh-featurenets.sh '${{ inputs.argo-sync-user-token }}'
 
     - name: Clean S3 storage
       shell: bash
       run: |
-        docker run --rm \
-          -e AWS_ACCESS_KEY_ID \
-          -e AWS_SECRET_ACCESS_KEY \
-          -e AWS_REGION \
-          -e 'FEATURENETS_S3_BUCKET_NAME=${{ inputs.featurenet-keys-s3bucket-name }}' \
-          -e 'FEATURENET_NAME=fe-${{ inputs.featurenet-name }}' \
-          '${{ inputs.ecr-public-registry }}featurenet-helper:v0.7.0' \
-          delete-featurenet-data-from-s3
+        cd '${{ inputs.repo-featurenet-template-name }}'
+
+        ./delete-featurenet-data-from-s3.sh '${{ inputs.featurenet-name }}'
