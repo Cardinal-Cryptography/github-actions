@@ -63,5 +63,5 @@ runs:
       id: commit
       shell: bash
       run: |
-        echo sha=$(git rev-parse --short HEAD) >> $GITHUB_OUTPUT
+        echo sha=$(git rev-parse --short=7 HEAD) >> $GITHUB_OUTPUT
 
