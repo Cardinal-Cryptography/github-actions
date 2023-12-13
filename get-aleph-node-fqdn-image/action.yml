@@ -135,12 +135,12 @@ runs:
       # yamllint disable rule:line-length
       run: |
         fqdn_image='${{ steps.compose-fqdn-node-image.outputs.fqdn-image }}'
-        if [[ ${{ steps.compose-fqdn-prod-node-image-in-dev-repo.outputs.fqdn-image != '' }} ]]; then
+        if [[ '${{ steps.compose-fqdn-prod-node-image-in-dev-repo.outputs.fqdn-image }}' != '' ]]; then
           fqdn_image='${{ steps.compose-fqdn-prod-node-image-in-dev-repo.outputs.fqdn-image }}'
         fi
         ref='${{ steps.compose-fqdn-node-image.outputs.ref }}'
         image_exists='${{ steps.check-fqdn-docker-image-existence.outputs.image-exists }}'
-        if [[ ${{ steps.check-fqdn-prod-node-image-in-dev-repo.outputs.image-exists != '' }}; then
+        if [[ '${{ steps.check-fqdn-prod-node-image-in-dev-repo.outputs.image-exists }}' != ]]; then
           image_exists='${{ steps.check-fqdn-prod-node-image-in-dev-repo.outputs.image-exists }}'
         fi
         echo "fqdn-image=${fqdn_image}" >> $GITHUB_OUTPUT
