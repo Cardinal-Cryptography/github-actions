@@ -1,0 +1,123 @@
+---
+name: Get aleph-node FQDN docker image
+description:
+  This action compiles fully qualified aleph node domain name of aleph-node image.
+  This name depends on whether
+    * it is test binary or production binary,
+    * what is commit SHA of git ref it is build from
+  There's spacial logic when searching for a production binary that cannot be found in the
+  production ECR repo - we assume it can be found as well in dev ECR repo, as long session
+  aleph-node binaries not build from main or release branches are not release candidates
+inputs:
+  ref:
+    description: "aleph-node repo's git ref: hash, branch, tag - or 'mainnet' or 'testnet'"
+    required: true
+  test-binary:
+    description: 'If true, use test binary image name in FQDN path'
+    required: true
+  ecr-dev-node-repo:
+    description: 'URL and name of aleph-node dev ECR repo'
+    required: true
+  ecr-prod-node-repo:
+    description: 'URL and name of aleph-node prod ECR repo'
+    required: true
+outputs:
+  fqdn-image:
+    description: 'FQDN path to aleph-node ECR docker image.'
+    value: ${{ steps.combine-action-outputs.outputs.fqdn-image }}
+  ref:
+    description: 'An aleph-node git ref to build image from.'
+    value: ${{ steps.combine-action-outputs.outputs.ref }}
+  image-exists:
+    description: 'True if aleph-node image does not exist on ECR '
+    value: ${{ steps.combine-action-outputs.outputs.build }}
+runs:
+  using: composite
+  steps:
+    - name: Get Testnet or Mainnet node's commit SHA
+      if: ${{ inputs.ref == 'mainnet' || inputs.ref == 'testnet' }}
+      id: get-node-commit-sha-from-net
+      uses: Cardinal-Cryptography/github-actions/get-node-system-version@v5
+      with:
+        env: ${{ inputs.ref }}
+
+    - name: Checkout aleph-node from input ref
+      if: ${{ inputs.ref != 'mainnet' && inputs.ref != 'testnet' }}
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.ref }}
+
+    - name: Get node commit SHA from input ref
+      if: ${{ inputs.ref != 'mainnet' && inputs.ref != 'testnet' }}
+      id: get-node-commit-sha-from-ref
+      uses: Cardinal-Cryptography/github-actions/get-ref-properties@v5
+
+    - name: Compose aleph-node fqdn docker image
+      id: compose-fqdn-node-image
+      env:
+        ECR_REPO: ${{ inputs.test-binary == 'true' &&
+           inputs.ecr-dev-node-repo ||
+           inputse.ecr-prod-node-repo }}
+        IMAGE_NAME: ${{ inputs.test-binary == 'true' &&
+           'dev-aleph-node' ||
+           'aleph-node' }}
+        SHA: ${{ (inputs.ref == 'mainnet' || inputs.ref == 'testnet') &&
+                steps.get-node-commit-sha-from-net.outputs.sha ||
+                steps.get-node-commit-sha-from-ref.outputs.sha }}
+      shell: bash
+      run: |
+        fqdn-image='${{ env.ECR_REPO }}/${{ env.IMAGE_NAME }}:${{ env.SHA }}'
+        echo "fqdn-image=${fqdn-image}" >> $GITHUB_OUTPUT
+        ref='${{ env.SHA }}'
+        echo "ref=${ref}" >> $GITHUB_OUTPUT
+
+    - name: Check fqdn node docker image existence
+      id: check-fqdn-docker-image-existence
+      uses: Cardinal-Cryptography/github-actions/check-image-existence-ecr@v5
+      with:
+        ecr-image: ${{ steps.compose-fqdn-node-image.outputs.fqdn-image }}
+        exit-when-image-not-exists: 'false'
+
+    # special case for production images built from feature branches (see this action description)
+    - name: Compose long session aleph-node fqdn docker image from dev ECR REPO
+      id: compose-fqdn-prod-node-image-in-dev-repo
+      if: ${{ steps.check-fqdn-docker-image-existence.outputs.image-exists == 'false' &&
+              inputs.test-binary == 'false' &&
+              inputs.ref != 'mainnet' && inputs.ref != 'testnet' }}
+      env:
+        ECR_REPO: ${{ inputs.ecr-dev-node-repo }}
+        IMAGE_NAME: 'aleph-node'
+        SHA: ${{ steps.get-node-commit-sha-from-ref.outputs.sha }}
+      shell: bash
+      run: |
+        fqdn-image='${{ env.ECR_REPO }}/${{ env.IMAGE_NAME }}:${{ env.SHA }}'
+        echo "fqdn-image=${fqdn-image}" >> $GITHUB_OUTPUT
+
+    - name: Check long session aleph-node fqdn docker image in dev ECR repo existence
+      id: check-fqdn-prod-node-image-in-dev-repo
+      if: ${{ steps.compose-fqdn-prod-node-image-in-dev-repo.outputs.fqdn-image != '' }}
+      uses: Cardinal-Cryptography/github-actions/check-image-existence-ecr@v5
+      with:
+        ecr-image: ${{ steps.compose-fqdn-prod-node-image-in-dev-repo.outputs.fqdn-image }}
+        exit-when-image-not-exists: 'false'
+
+    - name: Combine action outputs
+      id: combine-action-outputs
+      shell: bash
+      # yamllint disable rule:line-length
+      run: |
+        fqdn-image='${{ steps.compose-fqdn-node-image.outputs.fqdn-image }}'
+        if [[ ${{ steps.compose-fqdn-prod-node-image-in-dev-repo.outputs.fqdn-image != '' }} ]]; then
+          fqdn-image='${{ steps.compose-fqdn-prod-node-image-in-dev-repo.outputs.fqdn-image }}'
+        fi
+        ref='${{ steps.compose-fqdn-node-image.outputs.ref }}'
+        image-exists='${{ steps.check-fqdn-docker-image-existence.outputs.image-exists }}'
+        if [[ ${{ steps.check-fqdn-prod-node-image-in-dev-repo.outputs.image-exists != '' }}; then
+          image-exists='${{ steps.check-fqdn-prod-node-image-in-dev-repo.outputs.image-exists }}'
+        fi
+        echo "fqdn-image=${fqdn-image}" >> $GITHUB_OUTPUT
+        echo "ref=${ref}" >> $GITHUB_OUTPUT
+        echo "image-exists=${image-exists}" >> $GITHUB_OUTPUT
+      # yamllint enable rule:line-length
+
+
