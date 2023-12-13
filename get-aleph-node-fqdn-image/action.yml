@@ -140,7 +140,7 @@ runs:
         fi
         ref='${{ steps.compose-fqdn-node-image.outputs.ref }}'
         image_exists='${{ steps.check-fqdn-docker-image-existence.outputs.image-exists }}'
-        if [[ '${{ steps.check-fqdn-prod-node-image-in-dev-repo.outputs.image-exists }}' != ]]; then
+        if [[ '${{ steps.check-fqdn-prod-node-image-in-dev-repo.outputs.image-exists }}' != '' ]]; then
           image_exists='${{ steps.check-fqdn-prod-node-image-in-dev-repo.outputs.image-exists }}'
         fi
         echo "fqdn-image=${fqdn_image}" >> $GITHUB_OUTPUT
