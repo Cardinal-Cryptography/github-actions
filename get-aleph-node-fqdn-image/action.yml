@@ -87,8 +87,8 @@ runs:
                 steps.get-node-commit-sha-from-ref.outputs.sha }}
       shell: bash
       run: |
-        fqdn-image='${{ env.ECR_REPO }}/${{ env.IMAGE_NAME }}:${{ env.SHA }}'
-        echo "fqdn-image=${fqdn-image}" >> $GITHUB_OUTPUT
+        fqdn_image='${{ env.ECR_REPO }}/${{ env.IMAGE_NAME }}:${{ env.SHA }}'
+        echo "fqdn-image=${fqdn_image}" >> $GITHUB_OUTPUT
         ref='${{ env.SHA }}'
         echo "ref=${ref}" >> $GITHUB_OUTPUT
 
@@ -111,8 +111,8 @@ runs:
         SHA: ${{ steps.get-node-commit-sha-from-ref.outputs.sha }}
       shell: bash
       run: |
-        fqdn-image='${{ env.ECR_REPO }}/${{ env.IMAGE_NAME }}:${{ env.SHA }}'
-        echo "fqdn-image=${fqdn-image}" >> $GITHUB_OUTPUT
+        fqdn_image='${{ env.ECR_REPO }}/${{ env.IMAGE_NAME }}:${{ env.SHA }}'
+        echo "fqdn-image=${fqdn_image}" >> $GITHUB_OUTPUT
 
     - name: Check long session aleph-node fqdn docker image in dev ECR repo existence
       id: check-fqdn-prod-node-image-in-dev-repo
@@ -127,18 +127,18 @@ runs:
       shell: bash
       # yamllint disable rule:line-length
       run: |
-        fqdn-image='${{ steps.compose-fqdn-node-image.outputs.fqdn-image }}'
+        fqdn_image='${{ steps.compose-fqdn-node-image.outputs.fqdn-image }}'
         if [[ ${{ steps.compose-fqdn-prod-node-image-in-dev-repo.outputs.fqdn-image != '' }} ]]; then
-          fqdn-image='${{ steps.compose-fqdn-prod-node-image-in-dev-repo.outputs.fqdn-image }}'
+          fqdn_image='${{ steps.compose-fqdn-prod-node-image-in-dev-repo.outputs.fqdn-image }}'
         fi
         ref='${{ steps.compose-fqdn-node-image.outputs.ref }}'
-        image-exists='${{ steps.check-fqdn-docker-image-existence.outputs.image-exists }}'
+        image_exists='${{ steps.check-fqdn-docker-image-existence.outputs.image-exists }}'
         if [[ ${{ steps.check-fqdn-prod-node-image-in-dev-repo.outputs.image-exists != '' }}; then
-          image-exists='${{ steps.check-fqdn-prod-node-image-in-dev-repo.outputs.image-exists }}'
+          image_exists='${{ steps.check-fqdn-prod-node-image-in-dev-repo.outputs.image-exists }}'
         fi
-        echo "fqdn-image=${fqdn-image}" >> $GITHUB_OUTPUT
+        echo "fqdn-image=${fqdn_image}" >> $GITHUB_OUTPUT
         echo "ref=${ref}" >> $GITHUB_OUTPUT
-        echo "image-exists=${image-exists}" >> $GITHUB_OUTPUT
+        echo "image-exists=${image_exists}" >> $GITHUB_OUTPUT
       # yamllint enable rule:line-length
 
 
