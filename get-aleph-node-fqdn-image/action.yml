@@ -41,7 +41,7 @@ runs:
           echo "!!! Invalid ref"
           exit 1
         fi
-        if [[ '${{ inputs.test-binary != 'true' && inputs.test-binary != 'false' }}' ]]; then
+        if [[ '${{ inputs.test-binary }}' != 'true' && '${{ inputs.test-binary }}' != 'false'  ]]; then
           echo "!!! test binary should be either true or false"
           exit 1
         fi
