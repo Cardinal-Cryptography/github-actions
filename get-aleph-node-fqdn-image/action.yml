@@ -1,13 +1,20 @@
 ---
-name: Get aleph-node FQDN docker image
+name: Get aleph-node FQDN docker image for featurenets
 description:
-  This action compiles fully qualified aleph node domain name of aleph-node image.
+  This action compiles fully qualified aleph node domain name of aleph-node image. It is currently
+  used only in the context of featurnets.
+
   This name depends on whether
     * it is test binary or production binary,
     * what is commit SHA of git ref it is build from
+
   There's spacial logic when searching for a production binary that cannot be found in the
   production ECR repo - we assume it can be found as well in dev ECR repo, as long session
   aleph-node binaries not build from main or release branches are not release candidates
+
+  Convention of naming aleph-node images is as follows
+    * short session binaries are named aleph-node:<sha>-dev
+    * normal session binaries are named aleph-node:<sha>
 inputs:
   ref:
     description: "aleph-node repo's git ref: hash, branch, tag - or 'mainnet' or 'testnet'"
@@ -79,22 +86,22 @@ runs:
         ECR_REPO: ${{ inputs.test-binary == 'true' &&
            inputs.ecr-dev-node-repo ||
            inputs.ecr-prod-node-repo }}
-        IMAGE_NAME: ${{ inputs.test-binary == 'true' &&
-           'dev-aleph-node' ||
-           'aleph-node' }}
+        TAG_SUFFIX: ${{ inputs.test-binary == 'true' &&
+           '-dev' ||
+           '' }}
         SHA: ${{ (inputs.ref == 'mainnet' || inputs.ref == 'testnet') &&
                 steps.get-node-commit-sha-from-net.outputs.sha ||
                 steps.get-node-commit-sha-from-ref.outputs.sha }}
       shell: bash
       run: |
-        fqdn_image='${{ env.ECR_REPO }}/${{ env.IMAGE_NAME }}:${{ env.SHA }}'
+        fqdn_image='${{ env.ECR_REPO }}:${{ env.SHA }}${{ env.TAG_SUFFIX }}'
         echo "fqdn-image=${fqdn_image}" >> $GITHUB_OUTPUT
         ref='${{ env.SHA }}'
         echo "ref=${ref}" >> $GITHUB_OUTPUT
 
     - name: Check fqdn node docker image existence
       id: check-fqdn-docker-image-existence
-      uses: Cardinal-Cryptography/github-actions/check-image-existence-ecr@v5
+      uses: Cardinal-Cryptography/github-actions/check-image-existence-ecr@A0-3645
       with:
         ecr-image: ${{ steps.compose-fqdn-node-image.outputs.fqdn-image }}
         exit-when-image-not-exists: 'false'
@@ -107,11 +114,11 @@ runs:
               inputs.ref != 'mainnet' && inputs.ref != 'testnet' }}
       env:
         ECR_REPO: ${{ inputs.ecr-dev-node-repo }}
-        IMAGE_NAME: 'aleph-node'
+        TAG_SUFFIX: ''
         SHA: ${{ steps.get-node-commit-sha-from-ref.outputs.sha }}
       shell: bash
       run: |
-        fqdn_image='${{ env.ECR_REPO }}/${{ env.IMAGE_NAME }}:${{ env.SHA }}'
+        fqdn_image='${{ env.ECR_REPO }}:${{ env.SHA }}${{ env.TAG_SUFFIX }}'
         echo "fqdn-image=${fqdn_image}" >> $GITHUB_OUTPUT
 
     - name: Check long session aleph-node fqdn docker image in dev ECR repo existence
