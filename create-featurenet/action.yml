@@ -74,7 +74,7 @@ runs:
           exit 1
         fi
         if [[
-          ! '${{ inputs.featurenet-aleph-node-image }}' =~ ^[a-z0-9][a-z0-9\._\-]{1,48}$
+          ! '${{ inputs.featurenet-aleph-node-image }}' =~ ^[a-z0-9][a-z0-9\._/:\-]{1,48}$
         ]]
         then
           echo "!!! Invalid featurenet node image tag"

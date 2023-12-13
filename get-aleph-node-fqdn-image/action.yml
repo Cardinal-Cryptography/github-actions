@@ -37,7 +37,7 @@ outputs:
     value: ${{ steps.combine-action-outputs.outputs.ref }}
   image-exists:
     description: 'True if aleph-node image does not exist on ECR '
-    value: ${{ steps.combine-action-outputs.outputs.build }}
+    value: ${{ steps.combine-action-outputs.outputs.image-exists }}
 runs:
   using: composite
   steps:
