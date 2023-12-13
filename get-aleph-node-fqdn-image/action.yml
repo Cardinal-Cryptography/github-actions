@@ -57,7 +57,7 @@ runs:
       env:
         ECR_REPO: ${{ inputs.test-binary == 'true' &&
            inputs.ecr-dev-node-repo ||
-           inputse.ecr-prod-node-repo }}
+           inputs.ecr-prod-node-repo }}
         IMAGE_NAME: ${{ inputs.test-binary == 'true' &&
            'dev-aleph-node' ||
            'aleph-node' }}
