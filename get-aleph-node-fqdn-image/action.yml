@@ -90,8 +90,8 @@ runs:
            '-dev' ||
            '' }}
         SHA: ${{ (inputs.ref == 'mainnet' || inputs.ref == 'testnet') &&
-                steps.get-node-commit-sha-from-net.outputs.sha ||
-                steps.get-node-commit-sha-from-ref.outputs.sha }}
+                steps.get-node-commit-sha-from-net.outputs.full-sha ||
+                steps.get-node-commit-sha-from-ref.outputs.full-sha }}
       shell: bash
       run: |
         fqdn_image='${{ env.ECR_REPO }}:${{ env.SHA }}${{ env.TAG_SUFFIX }}'
@@ -115,7 +115,7 @@ runs:
       env:
         ECR_REPO: ${{ inputs.ecr-dev-node-repo }}
         TAG_SUFFIX: ''
-        SHA: ${{ steps.get-node-commit-sha-from-ref.outputs.sha }}
+        SHA: ${{ steps.get-node-commit-sha-from-ref.outputs.full-sha }}
       shell: bash
       run: |
         fqdn_image='${{ env.ECR_REPO }}:${{ env.SHA }}${{ env.TAG_SUFFIX }}'
