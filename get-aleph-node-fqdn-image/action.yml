@@ -65,7 +65,7 @@ runs:
     - name: Get Testnet or Mainnet node's commit SHA
       if: ${{ inputs.ref == 'mainnet' || inputs.ref == 'testnet' }}
       id: get-node-commit-sha-from-net
-      uses: Cardinal-Cryptography/github-actions/get-node-system-version@v5
+      uses: Cardinal-Cryptography/github-actions/get-node-system-version@A0-3645
       with:
         env: ${{ inputs.ref }}
 
@@ -89,14 +89,17 @@ runs:
         TAG_SUFFIX: ${{ inputs.test-binary == 'true' &&
            '-dev' ||
            '' }}
-        SHA: ${{ (inputs.ref == 'mainnet' || inputs.ref == 'testnet') &&
-                steps.get-node-commit-sha-from-net.outputs.full-sha ||
-                steps.get-node-commit-sha-from-ref.outputs.full-sha }}
+        ECR_SHA: ${{ (inputs.ref == 'mainnet' || inputs.ref == 'testnet') &&
+                steps.get-node-commit-sha-from-net.outputs.ecr-sha ||
+                steps.get-node-commit-sha-from-ref.outputs.ecr-sha }}
+        FULL_SHA: ${{ (inputs.ref == 'mainnet' || inputs.ref == 'testnet') &&
+          steps.get-node-commit-sha-from-net.outputs.full-sha ||
+          steps.get-node-commit-sha-from-ref.outputs.full-sha }}
       shell: bash
       run: |
-        fqdn_image='${{ env.ECR_REPO }}:${{ env.SHA }}${{ env.TAG_SUFFIX }}'
+        fqdn_image='${{ env.ECR_REPO }}:${{ env.ECR_SHA }}${{ env.TAG_SUFFIX }}'
         echo "fqdn-image=${fqdn_image}" >> $GITHUB_OUTPUT
-        ref='${{ env.SHA }}'
+        ref='${{ env.FULL_SHA }}'
         echo "ref=${ref}" >> $GITHUB_OUTPUT
 
     - name: Check fqdn node docker image existence
@@ -115,10 +118,10 @@ runs:
       env:
         ECR_REPO: ${{ inputs.ecr-dev-node-repo }}
         TAG_SUFFIX: ''
-        SHA: ${{ steps.get-node-commit-sha-from-ref.outputs.full-sha }}
+        ECR_SHA: ${{ steps.get-node-commit-sha-from-ref.outputs.ecr-sha }}
       shell: bash
       run: |
-        fqdn_image='${{ env.ECR_REPO }}:${{ env.SHA }}${{ env.TAG_SUFFIX }}'
+        fqdn_image='${{ env.ECR_REPO }}:${{ env.ECR_SHA }}${{ env.TAG_SUFFIX }}'
         echo "fqdn-image=${fqdn_image}" >> $GITHUB_OUTPUT
 
     - name: Check long session aleph-node fqdn docker image in dev ECR repo existence
