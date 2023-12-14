@@ -61,7 +61,6 @@ runs:
           exit 1
         fi
 
-
     - name: Get Testnet or Mainnet node's commit SHA
       if: ${{ inputs.ref == 'mainnet' || inputs.ref == 'testnet' }}
       id: get-node-commit-sha-from-net
@@ -90,8 +89,8 @@ runs:
            '-dev' ||
            '' }}
         ECR_SHA: ${{ (inputs.ref == 'mainnet' || inputs.ref == 'testnet') &&
-                steps.get-node-commit-sha-from-net.outputs.ecr-sha ||
-                steps.get-node-commit-sha-from-ref.outputs.ecr-sha }}
+                steps.get-node-commit-sha-from-net.outputs.sha ||
+                steps.get-node-commit-sha-from-ref.outputs.sha }}
         FULL_SHA: ${{ (inputs.ref == 'mainnet' || inputs.ref == 'testnet') &&
           steps.get-node-commit-sha-from-net.outputs.full-sha ||
           steps.get-node-commit-sha-from-ref.outputs.full-sha }}
