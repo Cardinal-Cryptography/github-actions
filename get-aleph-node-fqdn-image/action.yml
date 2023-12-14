@@ -78,7 +78,7 @@ runs:
     - name: Get node commit SHA from input ref
       if: ${{ inputs.ref != 'mainnet' && inputs.ref != 'testnet' }}
       id: get-node-commit-sha-from-ref
-      uses: Cardinal-Cryptography/github-actions/get-ref-properties@v5
+      uses: Cardinal-Cryptography/github-actions/get-ref-properties@A0-3645
 
     - name: Compose aleph-node fqdn docker image
       id: compose-fqdn-node-image
