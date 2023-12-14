@@ -126,7 +126,7 @@ runs:
     - name: Check long session aleph-node fqdn docker image in dev ECR repo existence
       id: check-fqdn-prod-node-image-in-dev-repo
       if: ${{ steps.compose-fqdn-prod-node-image-in-dev-repo.outputs.fqdn-image != '' }}
-      uses: Cardinal-Cryptography/github-actions/check-image-existence-ecr@v5
+      uses: Cardinal-Cryptography/github-actions/check-image-existence-ecr@A0-3645
       with:
         ecr-image: ${{ steps.compose-fqdn-prod-node-image-in-dev-repo.outputs.fqdn-image }}
         exit-when-image-not-exists: 'false'
