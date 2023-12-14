@@ -88,7 +88,7 @@ runs:
         TAG_SUFFIX: ${{ inputs.test-binary == 'true' &&
            '-dev' ||
            '' }}
-        ECR_SHA: ${{ (inputs.ref == 'mainnet' || inputs.ref == 'testnet') &&
+        SHA: ${{ (inputs.ref == 'mainnet' || inputs.ref == 'testnet') &&
                 steps.get-node-commit-sha-from-net.outputs.sha ||
                 steps.get-node-commit-sha-from-ref.outputs.sha }}
         FULL_SHA: ${{ (inputs.ref == 'mainnet' || inputs.ref == 'testnet') &&
@@ -96,7 +96,7 @@ runs:
           steps.get-node-commit-sha-from-ref.outputs.full-sha }}
       shell: bash
       run: |
-        fqdn_image='${{ env.ECR_REPO }}:${{ env.ECR_SHA }}${{ env.TAG_SUFFIX }}'
+        fqdn_image='${{ env.ECR_REPO }}:${{ env.SHA }}${{ env.TAG_SUFFIX }}'
         echo "fqdn-image=${fqdn_image}" >> $GITHUB_OUTPUT
         ref='${{ env.FULL_SHA }}'
         echo "ref=${ref}" >> $GITHUB_OUTPUT
@@ -117,10 +117,10 @@ runs:
       env:
         ECR_REPO: ${{ inputs.ecr-dev-node-repo }}
         TAG_SUFFIX: ''
-        ECR_SHA: ${{ steps.get-node-commit-sha-from-ref.outputs.ecr-sha }}
+        SHA: ${{ steps.get-node-commit-sha-from-ref.outputs.sha }}
       shell: bash
       run: |
-        fqdn_image='${{ env.ECR_REPO }}:${{ env.ECR_SHA }}${{ env.TAG_SUFFIX }}'
+        fqdn_image='${{ env.ECR_REPO }}:${{ env.SHA }}${{ env.TAG_SUFFIX }}'
         echo "fqdn-image=${fqdn_image}" >> $GITHUB_OUTPUT
 
     - name: Check long session aleph-node fqdn docker image in dev ECR repo existence
