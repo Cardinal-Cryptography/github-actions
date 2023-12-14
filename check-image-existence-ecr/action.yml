@@ -40,6 +40,8 @@ runs:
           if [[ '${{ inputs.exit-when-image-not-exists }}' == 'true' ]]; then
             exit 1
           fi
+        else
+          echo "image-exists=true" >> $GITHUB_OUTPUT
         fi
-        echo "image-exists=true" >> $GITHUB_OUTPUT
+
 
