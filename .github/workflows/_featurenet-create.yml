@@ -40,6 +40,10 @@ on:
         required: false
         type: boolean
         default: false
+  outputs:
+    ws-hostname:
+      description: Hostname of the WS endpoint
+      value: ${{ jobs.create-featurenet.outputs.ws-hostname }}
 
 jobs:
   validate-inputs:
@@ -73,12 +77,13 @@ jobs:
     runs-on: [self-hosted, Linux, X64, small]
     outputs:
       deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+      ws-hostname: ${{ steps.create-featurenet.outputs.ws-hostname }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Delete old featurenet app and data
-        if: ${{ inputs.delete-first == 'true' }}
+        if: ${{ inputs.delete-first == true }}
         uses: Cardinal-Cryptography/github-actions/delete-featurenet@v5
         with:
           gh-ci-user: ${{ secrets.CI_GH_USER }}
