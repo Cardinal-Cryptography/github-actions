@@ -64,7 +64,7 @@ runs:
     - name: Get Testnet or Mainnet node's commit SHA
       if: ${{ inputs.ref == 'mainnet' || inputs.ref == 'testnet' }}
       id: get-node-commit-sha-from-net
-      uses: Cardinal-Cryptography/github-actions/get-node-system-version@A0-3645
+      uses: Cardinal-Cryptography/github-actions/get-node-system-version@v6
       with:
         env: ${{ inputs.ref }}
 
@@ -77,7 +77,7 @@ runs:
     - name: Get node commit SHA from input ref
       if: ${{ inputs.ref != 'mainnet' && inputs.ref != 'testnet' }}
       id: get-node-commit-sha-from-ref
-      uses: Cardinal-Cryptography/github-actions/get-ref-properties@A0-3645
+      uses: Cardinal-Cryptography/github-actions/get-ref-properties@v6
 
     - name: Compose aleph-node fqdn docker image
       id: compose-fqdn-node-image
@@ -103,7 +103,7 @@ runs:
 
     - name: Check fqdn node docker image existence
       id: check-fqdn-docker-image-existence
-      uses: Cardinal-Cryptography/github-actions/check-image-existence-ecr@A0-3645
+      uses: Cardinal-Cryptography/github-actions/check-image-existence-ecr@v6
       with:
         ecr-image: ${{ steps.compose-fqdn-node-image.outputs.fqdn-image }}
         exit-when-image-not-exists: 'false'
@@ -126,7 +126,7 @@ runs:
     - name: Check long session aleph-node fqdn docker image in dev ECR repo existence
       id: check-fqdn-prod-node-image-in-dev-repo
       if: ${{ steps.compose-fqdn-prod-node-image-in-dev-repo.outputs.fqdn-image != '' }}
-      uses: Cardinal-Cryptography/github-actions/check-image-existence-ecr@A0-3645
+      uses: Cardinal-Cryptography/github-actions/check-image-existence-ecr@v6
       with:
         ecr-image: ${{ steps.compose-fqdn-prod-node-image-in-dev-repo.outputs.fqdn-image }}
         exit-when-image-not-exists: 'false'
