@@ -40,10 +40,10 @@ on:
         required: false
         type: boolean
         default: false
-  outputs:
-    ws-hostname:
-      description: Hostname of the WS endpoint
-      value: ${{ jobs.create-featurenet.outputs.ws-hostname }}
+    outputs:
+      ws-hostname:
+        description: Hostname of the WS endpoint
+        value: ${{ jobs.create-featurenet.outputs.ws-hostname }}
 
 jobs:
   validate-inputs:
