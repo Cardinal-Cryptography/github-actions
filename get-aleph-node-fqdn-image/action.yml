@@ -44,7 +44,7 @@ runs:
     - name: Validate inputs
       shell: bash
       run: |
-        if [[ ! '${{ inputs.ref }}' =~ ^[a-zA-Z0-9][a-zA-Z0-9\._\-]{1,48}$ ]]; then
+        if [[ ! '${{ inputs.ref }}' =~ ^[a-zA-Z0-9][a-zA-Z0-9/\._\-]{1,48}$ ]]; then
           echo "!!! Invalid ref"
           exit 1
         fi
