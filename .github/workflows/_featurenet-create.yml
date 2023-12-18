@@ -43,7 +43,7 @@ on:
       sudo-account-id:
         description: 'Sudo account ID'
         type: string
-        required: false
+        required: true
         default: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
     outputs:
       ws-hostname:
