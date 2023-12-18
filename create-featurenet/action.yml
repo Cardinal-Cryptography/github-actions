@@ -55,6 +55,10 @@ inputs:
     description: 'Wait for heads finalization'
     required: false
     default: "false"
+  sudo-account-id:
+    description: 'Sudo account ID'
+    required: false
+    default: '//Alice'
 outputs:
   ws-hostname:
     description: Hostname of the WS endpoint
@@ -105,6 +109,10 @@ runs:
           echo "!!! Expected expiration to have values from set {3h, 12h, 24h, 48h, 96h, never}"
           exit 1
         fi
+        if [[ ! '${{ inputs.sudo-account-id }}' =~ ^[a-zA-Z0-9]{48}$ ]]; then
+          echo "!!! Invalid sudo-account-id"
+          exit 1
+        fi
 
     - name: Checkout featurenet template repo
       uses: actions/checkout@v3
@@ -133,6 +141,7 @@ runs:
           '${{ inputs.rolling-update-partition }}' \
           '${{ inputs.expiration }}' \
           ${{ inputs.internal == 'true' && '-i' || '' }} \
+          ${{ inputs.sudo-account-id != '' && '-s inputs.sudo-account-id' || '' }} \
           -c -g | tee -a tmp-opssh-createfeaturenet-output.txt
 
         ws_hostname=$(cat tmp-opssh-createfeaturenet-output.txt | grep '^__output:ws-hostname:' | cut -d: -f3)
