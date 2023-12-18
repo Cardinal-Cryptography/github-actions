@@ -120,7 +120,8 @@ runs:
         repository: Cardinal-Cryptography/${{ inputs.repo-featurenet-template-name }}
         token: ${{ inputs.gh-ci-token }}
         path: "${{ inputs.repo-featurenet-template-name }}"
-        ref: main
+        # ref: main
+        ref: A0-3737
 
     - name: Start featurenet
       id: start-featurenet
@@ -140,8 +141,8 @@ runs:
           '${{ inputs.validators }}' \
           '${{ inputs.rolling-update-partition }}' \
           '${{ inputs.expiration }}' \
+          '${{ inputs.sudo-account-id }}' \
           ${{ inputs.internal == 'true' && '-i' || '' }} \
-          ${{ inputs.sudo-account-id != '' && '-s inputs.sudo-account-id' || '' }} \
           -c -g | tee -a tmp-opssh-createfeaturenet-output.txt
 
         ws_hostname=$(cat tmp-opssh-createfeaturenet-output.txt | grep '^__output:ws-hostname:' | cut -d: -f3)
