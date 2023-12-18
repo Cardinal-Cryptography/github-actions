@@ -68,7 +68,8 @@ jobs:
             echo "!!! Invalid aleph-node image"
             exit 1
           fi
-          if [[ ! '${{ inputs.sudo-account-id }}' =~ ^[a-zA-Z0-9]{48}$ ]]; then
+          if [[ ! '${{ inputs.sudo-account-id }}' =~ ^[a-zA-Z0-9]{48}$ && \
+                '${{ inputs.sudo-account-id }}' != '//Alice' ]]; then
             echo "!!! Invalid sudo-account-id"
             exit 1
           fi

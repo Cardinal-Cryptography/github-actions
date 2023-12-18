@@ -109,7 +109,8 @@ runs:
           echo "!!! Expected expiration to have values from set {3h, 12h, 24h, 48h, 96h, never}"
           exit 1
         fi
-        if [[ ! '${{ inputs.sudo-account-id }}' =~ ^[a-zA-Z0-9]{48}$ ]]; then
+        if [[ ! '${{ inputs.sudo-account-id }}' =~ ^[a-zA-Z0-9]{48}$ && \
+              '${{ inputs.sudo-account-id }}' != '//Alice' ]]; then
           echo "!!! Invalid sudo-account-id"
           exit 1
         fi
