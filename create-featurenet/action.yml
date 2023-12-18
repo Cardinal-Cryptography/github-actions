@@ -1,10 +1,10 @@
 ---
 name: Create featurenet
 description: |
-  This action several flows
-  * spawns new featurenet bootstraped from PR, node binary is test one (short session)
-  * spawns new update net from a node image that is on ECR, prpduction one (normal session)
-  * upgrades featurenet binary to a given version
+  This action is used in several dev flows to
+  * spawn new featurenet from any aleph node git ref,
+  * update binary in the existing featurenet,
+  * update rolling partition in the existing featurenet,
 inputs:
   gh-ci-user:
     description: 'GH user to be used in the action'
@@ -31,10 +31,6 @@ inputs:
     description: 'aleph-node docker image tag'
     required: true
     default: ''
-  featurenet-ecr-repo:
-    description: 'Use featurenets ECR repository instead of aleph-node'
-    required: false
-    default: 'false'
   expiration:
     description: 'Time after which updatenet will be removed'
     required: false
@@ -46,9 +42,9 @@ inputs:
       will be updated. If not specified, all nodes will be updated.
     required: false
     default: "0"
-  replicas:
+  validators:
     description: |
-      Number of pods to start, from 0 to 50.
+      Number of validators to start, from 0 to 50.
     required: false
     default: "5"
   internal:
@@ -78,7 +74,7 @@ runs:
           exit 1
         fi
         if [[
-          ! '${{ inputs.featurenet-aleph-node-image }}' =~ ^[a-z0-9][a-z0-9\._\-]{1,48}$
+          ! '${{ inputs.featurenet-aleph-node-image }}' =~ ^[a-z0-9][a-z0-9\._/:\-]{1,52}$
         ]]
         then
           echo "!!! Invalid featurenet node image tag"
@@ -93,11 +89,11 @@ runs:
           exit 1
         fi
         if [[
-          '${{ inputs.replicas }}' != "" && \
-          ! '${{ inputs.replicas }}' =~ ^[0-9]{1,2}$ || '${{ inputs.replicas }}' -gt 50
+          '${{ inputs.validators }}' != "" && \
+          ! '${{ inputs.validators }}' =~ ^[0-9]{1,2}$ || '${{ inputs.validators }}' -gt 50
         ]]
         then
-          echo "!!! Expected replicas to be a cardinal value from 0 to 50"
+          echo "!!! Expected validators to be a cardinal value from 0 to 50"
           exit 1
         fi
         if [[
@@ -133,11 +129,10 @@ runs:
         ./create-featurenet.sh \
           '${{ inputs.featurenet-name }}' \
           '${{ inputs.featurenet-aleph-node-image }}' \
-          '${{ inputs.replicas }}' \
+          '${{ inputs.validators }}' \
           '${{ inputs.rolling-update-partition }}' \
           '${{ inputs.expiration }}' \
           ${{ inputs.internal == 'true' && '-i' || '' }} \
-          ${{ inputs.featurenet-ecr-repo == 'true' && '-f' || '' }} \
           -c -g | tee -a tmp-opssh-createfeaturenet-output.txt
 
         ws_hostname=$(cat tmp-opssh-createfeaturenet-output.txt | grep '^__output:ws-hostname:' | cut -d: -f3)

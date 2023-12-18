@@ -6,14 +6,42 @@ inputs:
   ecr-image:
     required: true
     description: Public ECR image URL to check
+  exit-when-image-not-exists:
+    required: false
+    description: Set to 'true' to exit with 1 exit code when docker image does not exist
+    default: 'true'
+outputs:
+  image-exists:
+    description: Set to 'true' if docker image exists, otherwise 'false'
+    value: ${{ steps.check-if-image-exists.outputs.image-exists }}
 runs:
   using: composite
   steps:
+    - name: Validate inputs
+      shell: bash
+      run: |
+        if [[ '${{ inputs.exit-when-image-not-exists }}' != 'true' && '${{ inputs.exit-when-image-not-exists }}' != 'false'  ]]; then
+          echo "!!! exit-when-image-not-exists should be either true or false"
+          exit 1
+        fi
+        if [[ -z '${{ inputs.ecr-image }}' ]]; then
+          echo "!!! ecr-image is empty"
+          exit 1
+        fi
+
     - name: Check docker image existence in ECR
+      id: check-if-image-exists
       shell: bash
       run: |
         image_not_exist=$(docker manifest inspect ${{ inputs.ecr-image }} &> /dev/null ; echo $?)
-        if [[ $image_not_exist -eq 1 ]]; then
+        if [[ ${image_not_exist} -eq 1 ]]; then
           echo 'Error: docker image ${{ inputs.ecr-image }} does not exist'
-          exit 1
+          echo "image-exists=false" >> $GITHUB_OUTPUT
+          if [[ '${{ inputs.exit-when-image-not-exists }}' == 'true' ]]; then
+            exit 1
+          fi
+        else
+          echo "image-exists=true" >> $GITHUB_OUTPUT
         fi
+
+

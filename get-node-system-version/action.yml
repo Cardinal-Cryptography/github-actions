@@ -8,8 +8,11 @@ inputs:
     description: mainnet or testnet
 outputs:
   sha:
-    description: Commit SHA of RPC call system.version
+    description: Commit SHA of RPC call system.version compatible with ECR (7 characters)
     value: ${{ steps.rpc-system-version.outputs.sha }}
+  full-sha:
+    description: Full commit SHA of RPC call system.version
+    value: ${{ steps.rpc-system-version.outputs.full-sha }}
 
 runs:
   using: composite
@@ -22,6 +25,12 @@ runs:
           exit 1
         fi
 
+    - name: Checkout aleph-node repo with full depth
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        repository: Cardinal-Cryptography/aleph-node
+
     - name: Query RPC system.version
       id: rpc-system-version
       shell: bash
@@ -30,6 +39,11 @@ runs:
         COMMIT_ID=$(curl -s -H "Content-Type: application/json" \
           -d '{"id":1, "jsonrpc":"2.0", "method": "system_version"}' \
           '${{ inputs.env == 'mainnet' && 'https://rpc.azero.dev' || 'https://rpc.test.azero.dev' }}' \
-          | jq -r '.result' | cut -d "-" -f 2 | head -c 7)
-        echo "sha=$COMMIT_ID" >> $GITHUB_OUTPUT
+          | jq -r '.result' | cut -d "-" -f 2)
+        sha=$(echo ${COMMIT_ID} | head -c 7)
+        echo "sha=${sha}" >> $GITHUB_OUTPUT
+        full_sha=$(git rev-parse ${COMMIT_ID})
+        echo "full-sha=${full_sha}" >> $GITHUB_OUTPUT
       # yamllint enable rule:line-length
+
+

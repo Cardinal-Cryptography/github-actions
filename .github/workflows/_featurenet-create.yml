@@ -9,21 +9,16 @@ on:
         required: true
         type: string
       aleph-node-image:
-        description: "aleph-node image tag or 'mainnet' or 'testnet'"
+        description: "FQDN of aleph-node image"
         required: true
         type: string
-      featurenet-ecr-repo:
-        description: 'Use featurenets ECR repository instead of aleph-node'
-        required: false
-        type: boolean
-        default: false
       expiration:
         description: 'Time after which featurenet will be removed: "Xh" or "never"'
         required: false
         type: string
         default: 48h
-      replicas:
-        description: 'Number of replicas to start, from 0 to 50'
+      validators:
+        description: 'Number of validators to start, from 0 to 50'
         required: false
         default: '5'
         type: string
@@ -45,6 +40,10 @@ on:
         required: false
         type: boolean
         default: false
+    outputs:
+      ws-hostname:
+        description: Hostname of the WS endpoint
+        value: ${{ jobs.create-featurenet.outputs.ws-hostname }}
 
 jobs:
   validate-inputs:
@@ -60,7 +59,7 @@ jobs:
             echo '!!! Invalid featurenet name'
             exit 1
           fi
-          if [[ ! '${{ inputs.aleph-node-image }}' =~ ^[a-z0-9][a-z0-9\._\-]{1,48}$ ]]; then
+          if [[ ! '${{ inputs.aleph-node-image }}' =~ ^[a-z0-9][a-z0-9\._:/\-]{1,52}$ ]]; then
             echo "!!! Invalid aleph-node image"
             exit 1
           fi
@@ -78,12 +77,13 @@ jobs:
     runs-on: [self-hosted, Linux, X64, small]
     outputs:
       deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+      ws-hostname: ${{ steps.create-featurenet.outputs.ws-hostname }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Delete old featurenet app and data
-        if: ${{ inputs.delete-first == 'true' }}
+        if: ${{ inputs.delete-first == true }}
         uses: Cardinal-Cryptography/github-actions/delete-featurenet@v5
         with:
           gh-ci-user: ${{ secrets.CI_GH_USER }}
@@ -106,15 +106,8 @@ jobs:
           override: true
           debug: true
 
-      - name: Get node commit SHA
-        if: ${{ inputs.aleph-node-image == 'mainnet' || inputs.aleph-node-image == 'testnet' }}
-        id: get-node-commit-sha
-        uses: Cardinal-Cryptography/github-actions/get-node-system-version@v1
-        with:
-          env: ${{ inputs.aleph-node-image }}
-
       - name: Upsert featurenet with image tag
-        uses: Cardinal-Cryptography/github-actions/create-featurenet@v5
+        uses: Cardinal-Cryptography/github-actions/create-featurenet@v6
         id: create-featurenet
         with:
           gh-ci-user: ${{ secrets.CI_GH_USER }}
@@ -122,11 +115,9 @@ jobs:
           argo-sync-user-token: ${{ secrets.ARGO_SYNC_USER_TOKEN }}
           repo-featurenet-template-name: ${{ secrets.REPO_FEATURENET_TEMPLATE_NAME }}
           featurenet-name: ${{ inputs.featurenet-name }}
-          # yamllint disable-line rule:line-length
-          featurenet-aleph-node-image: ${{ (inputs.aleph-node-image == 'mainnet' || inputs.aleph-node-image == 'testnet') && steps.get-node-commit-sha.outputs.sha || inputs.aleph-node-image }}
-          featurenet-ecr-repo: ${{ inputs.featurenet-ecr-repo == true && 'true' || 'false' }}
+          featurenet-aleph-node-image: ${{ inputs.aleph-node-image }}
           expiration: ${{ inputs.expiration }}
-          replicas: ${{ inputs.replicas }}
+          validators: ${{ inputs.validators }}
           internal: ${{ inputs.internal && 'true' || 'false' }}
           rolling-update-partition: ${{ inputs.rolling-update-partition }}
           git-commit-author: ${{ secrets.AUTOCOMMIT_AUTHOR }}

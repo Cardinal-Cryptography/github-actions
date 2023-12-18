@@ -24,7 +24,9 @@ outputs:
   sha:
     description: Unique commit SHA
     value: ${{ steps.commit.outputs.sha }}
-
+  full-sha:
+    description: Unique full commit SHA
+    value: ${{ steps.commit.outputs.full-sha }}
 runs:
   using: composite
   steps:
@@ -64,4 +66,5 @@ runs:
       shell: bash
       run: |
         echo sha=$(git rev-parse --short=7 HEAD) >> $GITHUB_OUTPUT
+        echo full-sha=$(git rev-parse HEAD) >> $GITHUB_OUTPUT
 
