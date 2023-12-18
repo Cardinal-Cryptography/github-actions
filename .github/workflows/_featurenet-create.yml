@@ -44,7 +44,7 @@ on:
         description: 'Sudo account ID'
         type: string
         required: false
-        default: '//Alice'
+        default: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
     outputs:
       ws-hostname:
         description: Hostname of the WS endpoint
