@@ -1,8 +1,8 @@
 ---
 name: Create featurenet
 description: |
-  This action is used in several dev flows such us
-  * spawns new featurenet from any aleph node git ref,
+  This action is used in several dev flows to
+  * spawn new featurenet from any aleph node git ref,
   * update binary in the existing featurenet,
   * update rolling partition in the existing featurenet,
 inputs:

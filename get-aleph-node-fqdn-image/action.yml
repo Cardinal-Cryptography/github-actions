@@ -2,7 +2,7 @@
 name: Get aleph-node FQDN docker image for featurenets
 description:
   This action compiles fully qualified aleph node domain name of aleph-node image. It is currently
-  used only in the context of featurnets.
+  used only in the context of featurenets.
 
   This name depends on whether
     * it is test binary or production binary,
