@@ -47,7 +47,7 @@ on:
         default: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
       update:
         description: |
-          Perform update instead of create, and do not change values of validators, expiration, 
+          Perform update instead of create, and do not change values of validators, expiration,
           internal and sudo-account-id
         required: false
         type: boolean
