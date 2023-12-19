@@ -40,6 +40,11 @@ on:
         required: false
         type: boolean
         default: false
+      sudo-account-id:
+        description: 'Sudo account ID'
+        type: string
+        required: false
+        default: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
     outputs:
       ws-hostname:
         description: Hostname of the WS endpoint
@@ -61,6 +66,10 @@ jobs:
           fi
           if [[ ! '${{ inputs.aleph-node-image }}' =~ ^[a-z0-9][a-z0-9\._:/\-]{1,52}$ ]]; then
             echo "!!! Invalid aleph-node image"
+            exit 1
+          fi
+          if [[ ! '${{ inputs.sudo-account-id }}' =~ ^[a-zA-Z0-9]{48}$ ]]; then
+            echo "!!! Invalid sudo-account-id"
             exit 1
           fi
         # yamllint enable rule:line-length
@@ -123,6 +132,7 @@ jobs:
           git-commit-author: ${{ secrets.AUTOCOMMIT_AUTHOR }}
           git-commit-email: ${{ secrets.AUTOCOMMIT_EMAIL }}
           wait-for-finalized-heads: "true"
+          sudo-account-id: ${{ inputs.sudo-account-id }}
 
       - name: Finish featurenet Deployment
         uses: bobheadxi/deployments@v1
