@@ -57,7 +57,7 @@ inputs:
     default: "false"
   sudo-account-id:
     description: 'Sudo account ID'
-    required: true
+    required: false
     default: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
 outputs:
   ws-hostname:
