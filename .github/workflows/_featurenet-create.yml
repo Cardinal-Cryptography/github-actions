@@ -45,6 +45,11 @@ on:
         type: string
         required: false
         default: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
+      update:
+        description: 'Perform update instead of create, and do not change values of validators, expiration, internal and sudo-account-id'
+        required: false
+        type: boolean
+        default: false
     outputs:
       ws-hostname:
         description: Hostname of the WS endpoint
@@ -133,6 +138,7 @@ jobs:
           git-commit-email: ${{ secrets.AUTOCOMMIT_EMAIL }}
           wait-for-finalized-heads: "true"
           sudo-account-id: ${{ inputs.sudo-account-id }}
+          update: ${{ inputs.update && 'true' || 'false' }}
 
       - name: Finish featurenet Deployment
         uses: bobheadxi/deployments@v1
