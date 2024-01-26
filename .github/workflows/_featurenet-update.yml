@@ -12,21 +12,6 @@ on:
         description: "FQDN of aleph-node image"
         required: true
         type: string
-      expiration:
-        description: 'Time after which featurenet will be removed: "Xh" or "never"'
-        required: false
-        type: string
-        default: 48h
-      validators:
-        description: 'Number of validators to start, from 0 to 50'
-        required: false
-        default: '5'
-        type: string
-      internal:
-        description: 'Internal network, accessible from VPN only'
-        required: false
-        type: boolean
-        default: false
       rolling-update-partition:
         description: |
           Number from 0 to N-1, where N is size of am existing featurenet.
@@ -35,16 +20,6 @@ on:
         required: false
         default: '0'
         type: string
-      delete-first:
-        description: 'Delete featurenet before upserting'
-        required: false
-        type: boolean
-        default: false
-      sudo-account-id:
-        description: 'Sudo account ID'
-        type: string
-        required: false
-        default: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
     outputs:
       ws-hostname:
         description: Hostname of the WS endpoint
@@ -68,10 +43,6 @@ jobs:
             echo "!!! Invalid aleph-node image"
             exit 1
           fi
-          if [[ ! '${{ inputs.sudo-account-id }}' =~ ^[a-zA-Z0-9]{48}$ ]]; then
-            echo "!!! Invalid sudo-account-id"
-            exit 1
-          fi
         # yamllint enable rule:line-length
 
   check-vars-and-secrets:
@@ -91,20 +62,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Delete old featurenet app and data
-        if: ${{ inputs.delete-first == true }}
-        uses: Cardinal-Cryptography/github-actions/delete-featurenet@v5
-        with:
-          gh-ci-user: ${{ secrets.CI_GH_USER }}
-          gh-ci-token: ${{ secrets.CI_GH_TOKEN }}
-          aws-access-key-id: ${{ secrets.AWS_DEVNET_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_DEVNET_SECRET_ACCESS_KEY }}
-          argo-sync-user-token: ${{ secrets.ARGO_SYNC_USER_TOKEN }}
-          repo-featurenet-template-name: ${{ secrets.REPO_FEATURENET_TEMPLATE_NAME }}
-          featurenet-name: ${{ inputs.featurenet-name }}
-          git-commit-author: ${{ secrets.AUTOCOMMIT_AUTHOR }}
-          git-commit-email: ${{ secrets.AUTOCOMMIT_EMAIL }}
-
       - name: Start featurenet Deployment
         uses: bobheadxi/deployments@v1.1.0
         id: deployment
@@ -115,8 +72,8 @@ jobs:
           override: true
           debug: true
 
-      - name: Create featurenet with image tag
-        uses: Cardinal-Cryptography/github-actions/create-featurenet@A0-3761-tweak-naming-for-more-clarity
+      - name: Update featurenet with image tag
+        uses: Cardinal-Cryptography/github-actions/update-featurenet@A0-3761-tweak-naming-for-more-clarity
         id: create-featurenet
         with:
           gh-ci-user: ${{ secrets.CI_GH_USER }}
@@ -125,14 +82,10 @@ jobs:
           repo-featurenet-template-name: ${{ secrets.REPO_FEATURENET_TEMPLATE_NAME }}
           featurenet-name: ${{ inputs.featurenet-name }}
           featurenet-aleph-node-image: ${{ inputs.aleph-node-image }}
-          expiration: ${{ inputs.expiration }}
-          validators: ${{ inputs.validators }}
-          internal: ${{ inputs.internal && 'true' || 'false' }}
           rolling-update-partition: ${{ inputs.rolling-update-partition }}
           git-commit-author: ${{ secrets.AUTOCOMMIT_AUTHOR }}
           git-commit-email: ${{ secrets.AUTOCOMMIT_EMAIL }}
           wait-for-finalized-heads: "true"
-          sudo-account-id: ${{ inputs.sudo-account-id }}
 
       - name: Finish featurenet Deployment
         uses: bobheadxi/deployments@v1

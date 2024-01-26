@@ -31,10 +31,6 @@ inputs:
     description: 'aleph-node docker image tag'
     required: true
     default: ''
-  expiration:
-    description: 'Time after which updatenet will be removed'
-    required: false
-    default: ''
   rolling-update-partition:
     description: |
       Number from 0 to N-1, where N is size of am existing featurenet.
@@ -42,23 +38,10 @@ inputs:
       will be updated. If not specified, all nodes will be updated.
     required: false
     default: "0"
-  validators:
-    description: |
-      Number of validators to start, from 0 to 50.
-    required: false
-    default: "5"
-  internal:
-    description: 'Internal network, accessible from VPN only'
-    required: false
-    default: "false"
   wait-for-finalized-heads:
     description: 'Wait for heads finalization'
     required: false
     default: "false"
-  sudo-account-id:
-    description: 'Sudo account ID'
-    required: false
-    default: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
 outputs:
   ws-hostname:
     description: Hostname of the WS endpoint
@@ -92,27 +75,6 @@ runs:
           echo "!!! Expected rolling update partition to be a cardinal value from 0 to 9"
           exit 1
         fi
-        if [[
-          '${{ inputs.validators }}' != "" && \
-          ! '${{ inputs.validators }}' =~ ^[0-9]{1,2}$ || '${{ inputs.validators }}' -gt 50
-        ]]
-        then
-          echo "!!! Expected validators to be a cardinal value from 0 to 50"
-          exit 1
-        fi
-        if [[
-          '${{ inputs.expiration }}' != "" && \
-          ! '${{ inputs.expiration }}' =~ ^[0-9]{1,6}h$ && \
-          '${{ inputs.expiration }}' != "never"
-        ]]
-        then
-          echo "!!! Expected expiration to have values from set {3h, 12h, 24h, 48h, 96h, never}"
-          exit 1
-        fi
-        if [[ ! '${{ inputs.sudo-account-id }}' =~ ^[a-zA-Z0-9]{48}$ ]]; then
-          echo "!!! Invalid sudo-account-id"
-          exit 1
-        fi
 
     - name: Checkout featurenet template repo
       uses: actions/checkout@v3
@@ -137,14 +99,14 @@ runs:
         ./upsert-featurenet.sh \
           '${{ inputs.featurenet-name }}' \
           '${{ inputs.featurenet-aleph-node-image }}' \
-          '${{ inputs.validators }}' \
+          'not-used-because-update' \
           '${{ inputs.rolling-update-partition }}' \
-          '${{ inputs.expiration }}' \
-          '${{ inputs.sudo-account-id }}' \
-          ${{ inputs.internal == 'true' && '-i' || '' }} \
-          -c -g | tee -a tmp-opssh-createfeaturenet-output.txt
+          'not-used-because-update' \
+          'not-used-because-update' \
+          -u \
+          -c -g | tee -a tmp-opssh-updatefeaturenet-output.txt
 
-        ws_hostname=$(cat tmp-opssh-createfeaturenet-output.txt | grep '^__output:ws-hostname:' | cut -d: -f3)
+        ws_hostname=$(cat tmp-opssh-updatefeaturenet-output.txt | grep '^__output:ws-hostname:' | cut -d: -f3)
         echo "ws-hostname=${ws_hostname}" >> $GITHUB_OUTPUT
       # yamllint enable rule:line-length
 
