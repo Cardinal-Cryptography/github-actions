@@ -42,7 +42,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Delete featurenet app and data
-        uses: Cardinal-Cryptography/github-actions/delete-featurenet@v5
+        uses: Cardinal-Cryptography/github-actions/delete-featurenet@v6
         with:
           gh-ci-user: ${{ secrets.CI_GH_USER }}
           gh-ci-token: ${{ secrets.CI_GH_TOKEN }}
@@ -64,7 +64,7 @@ jobs:
       - name: Delete environment
         # yamllint disable-line rule:line-length
         if: ${{ matrix.updatenet-gh-env != 'devnet' && matrix.updatenet-gh-env != 'testnet' && matrix.updatenet-gh-env != 'mainnet' }}
-        uses: Cardinal-Cryptography/github-actions/gh-deployments-environments@v1
+        uses: Cardinal-Cryptography/github-actions/gh-deployments-environments@v6
         with:
           action: delete-environment
           env: ${{ inputs.featurenet-name }}
