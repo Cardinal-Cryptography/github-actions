@@ -59,7 +59,7 @@ jobs:
 
       - name: Test matrix values
         shell: bash
-        runs: |
+        run: |
           find downloaded-artifacts
           echo "${{ matrix.artifact }} -> ${{ secrets.CONTRACTS_S3BUCKET_NAME }} / ${{ inputs.project }}/artifacts/${{ inputs.version }}/${{ matrix.contract }}"
 
