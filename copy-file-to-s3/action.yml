@@ -22,7 +22,7 @@ inputs:
     description: Set to 'true' to compress file into a .tar.gz archive
     required: false
     default: 'true'
-  if-exists:
+  if-exist:
     description: Action to be taken when destination file already exists, one of 'skip', 'overwrite' or 'fail'
     required: false
     default: 'skip'
@@ -33,11 +33,11 @@ runs:
       shell: bash
       run: |
         if [[
-          '${{ inputs.if-exists }}' != 'skip' && \
-          '${{ inputs.if-exists }}' != 'overwrite' && \
-          '${{ inputs.if-exists }}' != 'fail'
+          '${{ inputs.if-exist }}' != 'skip' && \
+          '${{ inputs.if-exist }}' != 'overwrite' && \
+          '${{ inputs.if-exist }}' != 'fail'
         ]]; then
-          echo "!!! Invalid value for 'if-exists' argument, should be one of 'skip', 'overwrite' or 'fail'"
+          echo "!!! Invalid value for 'if-exist' argument, should be one of 'skip', 'overwrite' or 'fail'"
           exit 1
         fi
 
@@ -87,11 +87,11 @@ runs:
         if [[ "${not_exist}" != 'true' ]]; then
           echo '! File ${{ inputs.s3-bucket-filename }} already exists on S3 bucket.'
 
-          if [[ '${{ inputs.if-exists }}' == 'fail' ]]; then
+          if [[ '${{ inputs.if-exist }}' == 'fail' ]]; then
             echo '! Failing.'
             exit 1
           fi
-          if [[ '${{ inputs.if-exists }}' != 'overwrite' ]]; then
+          if [[ '${{ inputs.if-exist }}' != 'overwrite' ]]; then
             echo '! Skipping overwrite.'
             exit 0
           fi
