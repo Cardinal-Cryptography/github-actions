@@ -48,7 +48,8 @@ jobs:
       - name: Checkout repository
         if: ${{ inputs.checkout == true }}
         uses: actions/checkout@v4
-        ref: '${{ inputs.checkout-ref }}'
+        with:
+          ref: '${{ inputs.checkout-ref }}'
 
       - name: Download artifacts
         if: ${{ inputs.download-artifacts != '' }}
