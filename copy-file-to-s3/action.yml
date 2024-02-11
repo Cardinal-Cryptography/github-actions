@@ -85,13 +85,13 @@ runs:
           2> /dev/null || not_exist=true
 
         if [[ "${not_exist}" != 'true' ]]; then
+          echo '! File ${{ inputs.s3-bucket-filename }} already exists on S3 bucket.'
+
           if [[ '${{ inputs.if-exists }}' == 'fail' ]]; then
-            echo '! File ${{ inputs.s3-bucket-filename }} already exists on S3 bucket.'
             echo '! Failing.'
             exit 1
           fi
           if [[ '${{ inputs.if-exists }}' != 'overwrite' ]]; then
-            echo '! File ${{ inputs.s3-bucket-filename }} already exists on S3 bucket.'
             echo '! Skipping overwrite.'
             exit 0
           fi
