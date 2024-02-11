@@ -37,6 +37,7 @@ jobs:
   test:
     name: Test sub-workflow
     uses: ./.github/workflows/_contract-artifact-store.yml
+    secrets: inherit
     with:
       project: 'most'
       version: 'v1.0.0'
