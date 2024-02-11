@@ -45,6 +45,14 @@ jobs:
     strategy:
       matrix: ${{ fromJson(inputs.artifacts) }}
     steps:
+      #- name: Check secrets
+      #  shell: bash
+      #  run: |
+      #    if [[ '${{ secrets.CONTRACTS_S3BUCKET_NAME }}' == '' ]]; then
+      #      echo 'There is a secret missing'
+      #      exit 1
+      #    fi
+
       - name: Checkout repository
         if: ${{ inputs.checkout == true }}
         uses: actions/checkout@v4

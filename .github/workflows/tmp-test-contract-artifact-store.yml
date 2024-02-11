@@ -48,6 +48,10 @@ jobs:
             {
               "contract": "eth_governance",
               "artifact": "downloaded-artifacts/eth/artifacts/contracts/Governance.sol/Governance.json"
+            },
+            {
+              "contract": "azero_something",
+              "artifact": "downloaded-artifacts/something/path1"
             }
           ]
         }
