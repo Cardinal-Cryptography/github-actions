@@ -1,0 +1,48 @@
+---
+name: Contract Addresses - Store
+
+inputs:
+  project:
+    description: Name of the project
+    required: true
+  chain-environment:
+    description: Chain environment
+    required: true
+  frontend-environment:
+    description: Name of the frontend app environment
+    required: true
+  addresses:
+    description: File that contains addresses
+    required: true
+  aws-access-key-id:
+    description: AWS access key id
+    required: true
+  aws-secret-access-key:
+    description: AWS secret access key
+    required: true
+  aws-region:
+    description: AWS region
+    required: true
+  s3-bucket:
+    description: Name of the S3 bucket
+    required: true
+  if-exist:
+    description: Action to be taken when destination file already exists, one of 'skip', 'overwrite' or 'fallback'
+    required: false
+    default: 'skip'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Copy files to S3 AWS bucket
+      uses: Cardinal-Cryptography/github-actions/copy-file-to-s3@v6
+      env:
+        AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
+        AWS_DEFAULT_REGION: ${{ inputs.aws-region }}
+      with:
+        compression: false
+        source-path: ${{ inputs.addressses }}
+        s3-bucket-filename: '${{ inputs.frontend-environment }}.json'
+        s3-bucket-path: ${{ inputs.project }}/addresses/${{ inputs.chain-environment }}
+        s3-bucket-name: ${{ inputs.s3-bucket }}

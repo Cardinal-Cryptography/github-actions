@@ -4,7 +4,7 @@ name: Tmp test contract artifact store
 on:
   push:
     branches:
-      - A0-4026-add-code-for-dealing-with-contracts
+      - non-existing-branch
 
 jobs:
   artifacts:

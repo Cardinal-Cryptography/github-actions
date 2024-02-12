@@ -1,0 +1,42 @@
+---
+name: Contract Artifact - Download
+
+inputs:
+  project:
+    description: Name of the project
+    required: true
+  version:
+    description: Version of the artifacts, eg. 'v1.0.0' or commit SHA
+    required: true
+  contract:
+    description: Name of the contract
+    required: true
+  artifact:
+    description: Path to artifact file
+    required: true
+  aws-access-key-id:
+    description: AWS access key id
+    required: true
+  aws-secret-access-key:
+    description: AWS secret access key
+    required: true
+  aws-region:
+    description: AWS region
+    required: true
+  s3-bucket:
+    description: Name of the S3 bucket
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download files from S3 AWS bucket
+      shell: bash
+      env:
+        AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
+        AWS_DEFAULT_REGION: ${{ inputs.aws-region }}
+      run: |
+        mkdir -p ${{ inputs.contract }}
+        s3_art_path="${{ inputs.project }}/artifacts/${{ inputs.version }}"
+        aws s3 cp s3://${{ secrets.CONTRACTS_S3BUCKET_NAME }}/${s3_art_path}/${{ inputs.contract }}/* ${{ inputs.contract }}/
