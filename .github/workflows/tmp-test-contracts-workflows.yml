@@ -60,7 +60,7 @@ jobs:
       checkout-ref: ''
       download-artifacts: artifacts*
   test2:
-    name: Test sub-workflow
+    name: Test sub-workflow 2
     needs: [test1]
     uses: ./.github/workflows/_contract-addresses-store.yml
     secrets: inherit
@@ -72,3 +72,23 @@ jobs:
       checkout: true
       checkout-ref: ''
       download-artifacts: artifacts*
+  test3:
+    name: Test sub-worklow 3
+    needs: [test2]
+    uses: ./.github/workflows/_contract-artifact-download.yml
+    secrets: inherit
+    with:
+      project: 'most'
+      version: 'v1.0.0'
+      artifacts: >-
+        {
+          "include":
+          [
+            {
+              "contract": "eth_governance"
+            },
+            {
+              "contract": "azero_something"
+            }
+          ]
+        }

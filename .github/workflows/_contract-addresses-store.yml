@@ -68,12 +68,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: ${{ inputs.download-artifacts }}
-          path: downloaded-artifacts
+          path: downloaded-artifacts-${{ inputs.project }}-${{ inputs.chain-environment }}-${{ inputs.frontend-environment }}
 
       - name: Test values
         shell: bash
         run: |
-          find downloaded-artifacts
+          find downloaded-artifacts-${{ inputs.project }}-${{ inputs.chain-environment }}-${{ inputs.frontend-environment }}
           echo "${{ inputs.addresses }} -> ${{ secrets.CONTRACTS_S3BUCKET_NAME }} / ${{ inputs.project }}/addresses/${{ inputs.chain-environment }}"
 
       #- name: Copy files to S3 AWS bucket
