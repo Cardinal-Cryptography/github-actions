@@ -11,8 +11,8 @@ inputs:
   frontend-environment:
     description: Name of the frontend app environment
     required: true
-  addresses:
-    description: File that contains addresses
+  src-addresses:
+    description: Path to file that contains addresses to be stored
     required: true
   aws-access-key-id:
     description: AWS access key id
@@ -34,7 +34,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Copy files to S3 AWS bucket
+    - name: Store contract addresses file on AWS S3 bucket
       uses: Cardinal-Cryptography/github-actions/copy-file-to-s3@v6
       env:
         AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
@@ -42,7 +42,8 @@ runs:
         AWS_DEFAULT_REGION: ${{ inputs.aws-region }}
       with:
         compression: false
-        source-path: ${{ inputs.addressses }}
+        source-path: ${{ inputs.src-addresses }}
         s3-bucket-filename: '${{ inputs.frontend-environment }}.json'
         s3-bucket-path: ${{ inputs.project }}/addresses/${{ inputs.chain-environment }}
         s3-bucket-name: ${{ inputs.s3-bucket }}
+        if-exist: ${{ inputs.if-exist }}

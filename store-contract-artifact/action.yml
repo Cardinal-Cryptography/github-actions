@@ -11,8 +11,8 @@ inputs:
   contract:
     description: Name of the contract
     required: true
-  artifact:
-    description: Path to artifact file
+  src-artifact:
+    description: Path to artifact file to be stored
     required: true
   aws-access-key-id:
     description: AWS access key id
@@ -34,7 +34,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Copy files to S3 AWS bucket
+    - name: Store contract artifact on AWS S3 bucket
       uses: Cardinal-Cryptography/github-actions/copy-file-to-s3@v6
       env:
         AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
@@ -42,7 +42,7 @@ runs:
         AWS_DEFAULT_REGION: ${{ inputs.aws-region }}
       with:
         compression: false
-        source-path: ${{ inputs.artifact }}
+        source-path: ${{ inputs.src-artifact }}
         s3-bucket-filename: ''
         s3-bucket-path: ${{ inputs.project }}/artifacts/${{ inputs.version }}/${{ inputs.contract }}
         s3-bucket-name: ${{ inputs.s3-bucket }}

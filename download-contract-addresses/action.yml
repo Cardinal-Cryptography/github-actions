@@ -11,8 +11,8 @@ inputs:
   frontend-environment:
     description: Name of the frontend app environment
     required: true
-  addresses:
-    description: File that contains addresses
+  dst-addresses:
+    description: Path where addresses file should be saved
     required: true
   aws-access-key-id:
     description: AWS access key id
@@ -26,16 +26,20 @@ inputs:
   s3-bucket:
     description: Name of the S3 bucket
     required: true
+  if-not-exist:
+    description: Action to be taken when destination file does not exists, one of 'skip' or 'fallback'
 
 runs:
   using: "composite"
   steps:
-    - name: Download files from S3 AWS bucket
-      shell: bash
+    - name: Download contract addresses from AWS S3 bucket
+      uses: Cardinal-Cryptography/github-actions/get-file-from-s3@v6
       env:
         AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
         AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
         AWS_DEFAULT_REGION: ${{ inputs.aws-region }}
-      run: |
-        s3_art_path="${{ inputs.project }}/addresses/${{ inputs.chain-environment }}"
-        aws s3 cp s3://${{ secrets.CONTRACTS_S3BUCKET_NAME }}/${s3_art_path}/${{ inputs.frontend-environment }}.json .
+      with:
+        destination-path: ${{ inputs.dst-addresses }}
+        s3-bucket-path: ${{ inputs.project }}/addresses/${{ inputs.chain-environment }}/${{ inputs.frontend-environment }}.json
+        s3-bucket-name: ${{ inputs.s3-bucket }}
+        if-not-exist: ${{ inputs.if-not-exist }}

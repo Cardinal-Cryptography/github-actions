@@ -1,0 +1,42 @@
+---
+name: Get file from S3
+description: |
+  Downloads a file from AWS S3 Bucket
+inputs:
+  destination-path:
+    description: Path to a file that should be saved
+    required: true
+  s3-bucket-path:
+    description: Path on S3 bucket where file will be stored
+    required: true
+  s3-bucket-name:
+    description: Name of the bucket where file is copied on S3
+    required: true
+  if-not-exist:
+    description: Action to be taken when path does not exit on S3 bucket, one of 'skip' or 'fallback' (default)
+    required: false
+    default: 'fallback'
+runs:
+  using: composite
+  steps:
+    - name: Copy file to AWS S3 bucket
+      shell: bash
+      run: |
+        aws s3api head-object \
+          --bucket '${{ inputs.s3-bucket-name }}' \
+          --key '${{ inputs.s3-bucket-path }}' \
+          2> /dev/null || not_exist=true
+
+        if [[ "${not_exist}" == 'true' ]]; then
+          echo '! Path ${{ inputs.s3-bucket-path }} does not exist on S3 bucket.'
+
+          if [[ '${{ inputs.if-not-exist }}' == 'skip' ]]; then
+            echo '! Skipping';
+            exit 0;            
+          fi
+
+          echo '! Failing.'
+          exit 1
+        fi
+
+        aws s3 cp s3://${{ inputs.s3-bucket-name }}/${{ inputs.s3-bucket-path }} ${{ inputs.destination-path }}
