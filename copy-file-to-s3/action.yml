@@ -23,7 +23,7 @@ inputs:
     required: false
     default: 'true'
   if-exist:
-    description: Action to be taken when destination file already exists, one of 'skip', 'overwrite' or 'fail'
+    description: Action to be taken when destination file already exists, one of 'skip', 'overwrite' or 'fallback'
     required: false
     default: 'skip'
 runs:
@@ -35,9 +35,9 @@ runs:
         if [[
           '${{ inputs.if-exist }}' != 'skip' && \
           '${{ inputs.if-exist }}' != 'overwrite' && \
-          '${{ inputs.if-exist }}' != 'fail'
+          '${{ inputs.if-exist }}' != 'fallback'
         ]]; then
-          echo "!!! Invalid value for 'if-exist' argument, should be one of 'skip', 'overwrite' or 'fail'"
+          echo "!!! Invalid value for 'if-exist' argument, should be one of 'skip', 'overwrite' or 'fallback'"
           exit 1
         fi
 
@@ -87,11 +87,11 @@ runs:
         if [[ "${not_exist}" != 'true' ]]; then
           echo '! File ${{ inputs.s3-bucket-filename }} already exists on S3 bucket.'
 
-          if [[ '${{ inputs.if-exist }}' == 'fail' ]]; then
+          if [[ '${{ inputs.if-exist }}' == 'fallback' ]]; then
             echo '! Failing.'
             exit 1
           fi
-          if [[ '${{ inputs.if-exist }}' != 'overwrite' ]]; then
+          if [[ '${{ inputs.if-exist }}' == 'skip' ]]; then
             echo '! Skipping overwrite.'
             exit 0
           fi
