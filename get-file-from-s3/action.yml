@@ -13,7 +13,7 @@ inputs:
     description: Name of the bucket where file is copied on S3
     required: true
   if-not-exist:
-    description: Action to be taken when path does not exit on S3 bucket, one of 'skip' or 'fallback' (default)
+    description: Action to be taken when path does not exit on S3 bucket, one of 'skip' or 'fallback' (default) or 'try'
     required: false
     default: 'fallback'
 runs:
@@ -32,11 +32,13 @@ runs:
 
           if [[ '${{ inputs.if-not-exist }}' == 'skip' ]]; then
             echo '! Skipping';
-            exit 0;            
+            exit 0;
           fi
 
-          echo '! Failing.'
-          exit 1
+          if [[ '${{ inputs.if-not-exist }}' != 'try' ]]; then
+            echo '! Failing.'
+            exit 1
+          fi
         fi
 
         aws s3 cp s3://${{ inputs.s3-bucket-name }}/${{ inputs.s3-bucket-path }} ${{ inputs.destination-path }}

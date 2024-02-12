@@ -27,9 +27,9 @@ inputs:
     description: Name of the S3 bucket
     required: true
   if-not-exist:
-    description: Action to be taken when destination file does not exists, one of 'skip' or 'fallback'
+    description: Action to be taken when destination file does not exists, one of 'skip' or 'fallback' or 'try'
     required: false
-    default: 'fallback'
+    default: 'try'
 
 runs:
   using: "composite"
