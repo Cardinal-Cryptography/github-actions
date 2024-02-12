@@ -28,12 +28,14 @@ inputs:
     required: true
   if-not-exist:
     description: Action to be taken when destination file does not exists, one of 'skip' or 'fallback'
+    required: false
+    default: 'fallback'
 
 runs:
   using: "composite"
   steps:
     - name: Download contract artifact from AWS S3 bucket
-      uses: Cardinal-Cryptography/github-actions/get-file-from-s3@v6
+      uses: Cardinal-Cryptography/github-actions/get-file-from-s3@A0-4026-add-code-for-dealing-with-contracts
       env:
         AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
         AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
