@@ -42,6 +42,6 @@ runs:
         AWS_DEFAULT_REGION: ${{ inputs.aws-region }}
       with:
         destination-path: ${{ inputs.dst-artifact }}
-        s3-bucket-path: ${{ inputs.project }}/artifacts/${{ inputs.version }}/${{ inputs.contract }}
+        s3-bucket-path: ${{ inputs.project }}/artifacts/${{ inputs.version }}/${{ inputs.contract }}/
         s3-bucket-name: ${{ inputs.s3-bucket }}
         if-not-exist: ${{ inputs.if-not-exist }}
