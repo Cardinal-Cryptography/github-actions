@@ -1,7 +1,7 @@
 ---
 name: Copy file to S3
 description: |
-  Uploads a file to an S3 AWS Bucket
+  Uploads a file to AWS S3 Bucket
 inputs:
   source-path:
     description: Path where source file is stored
@@ -29,7 +29,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Copy file to S3 AWS bucket
+    - name: Copy file to AWS S3 bucket
       shell: bash
       run: |
         if [[

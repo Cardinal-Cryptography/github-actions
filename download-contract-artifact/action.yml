@@ -1,0 +1,91 @@
+---
+name: Contract Artifact - Download
+
+inputs:
+  project:
+    description: Name of the project
+    required: true
+  version:
+    description: Version of the artifacts, eg. 'v1.0.0' or commit SHA
+    required: true
+  contract:
+    description: Name of the contract
+    required: true
+  dst-artifact:
+    description: Path where contract artifact should be saved
+    required: true
+  aws-access-key-id:
+    description: AWS access key id
+    required: true
+  aws-secret-access-key:
+    description: AWS secret access key
+    required: true
+  aws-region:
+    description: AWS region
+    required: true
+  s3-bucket:
+    description: Name of the S3 bucket
+    required: true
+  if-not-exist:
+    description: Action to be taken when destination file does not exists, one of 'skip' or 'fallback' or 'try'
+    required: false
+    default: 'try'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check inputs
+      shell: bash
+      run: |
+        if [[
+          ! '${{ inputs.project }}' =~ ^[a-zA-Z0-9/_-]+$
+        ]]
+        then
+          echo '!!! Invalid project'
+          exit 1
+        fi
+
+        if [[
+          ! '${{ inputs.version }}' =~ ^[a-zA-Z0-9./_-\]+$
+        ]]
+        then
+          echo '!!! Invalid version'
+          exit 1
+        fi
+
+        if [[
+          ! '${{ inputs.contract }}' =~ ^[a-zA-Z0-9/_-]+$
+        ]]
+        then
+          echo '!!! Invalid contract'
+          exit 1
+        fi
+
+        if [[
+          ! '${{ inputs.s3-bucket }}' =~ ^[a-zA-Z0-9_-]+$
+        ]]
+        then
+          echo '!!! Invalid s3-bucket'
+          exit 1
+        fi
+
+        if [[
+          '${{ inputs.if-not-exist }}' != 'skip' && \
+          '${{ inputs.if-not-exist }}' != 'try' && \
+          '${{ inputs.if-not-exist }}' != 'fallback'
+        ]]; then
+          echo "!!! Invalid value for 'if-not-exist' argument, should be one of 'skip', 'try' or 'fallback'"
+          exit 1
+        fi
+
+    - name: Download contract artifact from AWS S3 bucket
+      uses: Cardinal-Cryptography/github-actions/get-file-from-s3@v6
+      env:
+        AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
+        AWS_DEFAULT_REGION: ${{ inputs.aws-region }}
+      with:
+        destination-path: ${{ inputs.dst-artifact }}
+        s3-bucket-path: ${{ inputs.project }}/artifacts/${{ inputs.version }}/${{ inputs.contract }}
+        s3-bucket-name: ${{ inputs.s3-bucket }}
+        if-not-exist: ${{ inputs.if-not-exist }}
