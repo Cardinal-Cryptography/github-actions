@@ -46,7 +46,7 @@ runs:
         fi
 
         if [[
-          ! '${{ inputs.version }}' =~ ^[a-zA-Z0-9/_-\.]+$
+          ! '${{ inputs.version }}' =~ ^[a-zA-Z0-9./_-\]+$
         ]]
         then
           echo '!!! Invalid version'
