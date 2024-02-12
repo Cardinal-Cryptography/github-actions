@@ -34,6 +34,50 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Check inputs
+      shell: bash
+      run: |
+        if [[
+          ! '${{ inputs.project }}' =~ ^[a-zA-Z0-9/_-]+$
+        ]]
+        then
+          echo '!!! Invalid project'
+          exit 1
+        fi
+
+        if [[
+          ! '${{ inputs.chain-environment }}' =~ ^[a-zA-Z0-9/_-]+$
+        ]]
+        then
+          echo '!!! Invalid chain-environment'
+          exit 1
+        fi
+
+        if [[
+          ! '${{ inputs.frontend-environment }}' =~ ^[a-zA-Z0-9/_-]+$
+        ]]
+        then
+          echo '!!! Invalid frontend-environment'
+          exit 1
+        fi
+
+        if [[
+          ! '${{ inputs.s3-bucket }}' =~ ^[a-zA-Z0-9_-]+$
+        ]]
+        then
+          echo '!!! Invalid s3-bucket'
+          exit 1
+        fi
+
+        if [[
+          '${{ inputs.if-exist }}' != 'skip' && \
+          '${{ inputs.if-exist }}' != 'overwrite' && \
+          '${{ inputs.if-exist }}' != 'fallback'
+        ]]; then
+          echo "!!! Invalid value for 'if-exist' argument, should be one of 'skip', 'overwrite' or 'fallback'"
+          exit 1
+        fi
+
     - name: Store contract addresses file on AWS S3 bucket
       uses: Cardinal-Cryptography/github-actions/copy-file-to-s3@v6
       env:
