@@ -79,7 +79,7 @@ runs:
         fi
 
     - name: Download contract artifact from AWS S3 bucket
-      uses: Cardinal-Cryptography/github-actions/get-file-from-s3@A0-4026-add-code-for-dealing-with-contracts
+      uses: Cardinal-Cryptography/github-actions/get-file-from-s3@v6
       env:
         AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
         AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
