@@ -1,0 +1,90 @@
+---
+name: Contract Addresses - Store
+
+on:
+  workflow_call:
+    inputs:
+      project:
+        description: Name of the project
+        type: string
+        required: true
+      chain-environment:
+        description: Chain environment
+        type: string
+        required: true
+      frontend-environment:
+        description: Name of the frontend app environment
+        type: string
+        required: true
+      addresses:
+        description: File that contains addresses
+        type: string
+        required: true
+      checkout:
+        description: Checkout the code
+        type: boolean
+        required: false
+        default: false
+      checkout-ref:
+        description: Ref to be used when checking out the code
+        type: string
+        required: false
+        default: ''
+      download-artifacts:
+        description: Set
+        type: string
+        required: false
+        default: ''
+
+jobs:
+  check-vars-and-secrets:
+    name: Check vars and secrets
+    uses: ./.github/workflows/_check-vars-and-secrets.yml
+    secrets: inherit
+
+  store-contract-addresses:
+    needs: [check-vars-and-secrets]
+    name: Store contract artifact
+    runs-on: [self-hosted, Linux, X64, small]
+    strategy:
+      matrix: ${{ fromJson(inputs.artifacts) }}
+    steps:
+      #- name: Check secrets
+      #  shell: bash
+      #  run: |
+      #    if [[ '${{ secrets.CONTRACTS_S3BUCKET_NAME }}' == '' ]]; then
+      #      echo 'There is a secret missing'
+      #      exit 1
+      #    fi
+
+      - name: Checkout repository
+        if: ${{ inputs.checkout == true }}
+        uses: actions/checkout@v4
+        with:
+          ref: '${{ inputs.checkout-ref }}'
+
+      - name: Download artifacts
+        if: ${{ inputs.download-artifacts != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ${{ inputs.download-artifacts }}
+          path: downloaded-artifacts
+
+      - name: Test values
+        shell: bash
+        run: |
+          find downloaded-artifacts
+          echo "${{ inputs.addresses }} -> ${{ secrets.CONTRACTS_S3BUCKET_NAME }} / ${{ inputs.project }}/addresses/${{ inputs.chain-environment }}"
+
+      #- name: Copy files to S3 AWS bucket
+      #  uses: Cardinal-Cryptography/github-actions/copy-file-to-s3@v1
+      #  env:
+      #    AWS_ACCESS_KEY_ID: ${{ secrets.CONTRACTS_MOST_ARTIFACTS_RW_AWS_ACCESS_KEY_ID }}
+      #    AWS_SECRET_ACCESS_KEY: ${{ secrets.CONTRACTS_MOST_ARTIFACTS_RW_AWS_SECRET_ACCESS_KEY }}
+      #    AWS_DEFAULT_REGION: ${{ secrets.CONTRACTS_S3BUCKET_REGION }}
+      #  with:
+      #    compression: false
+      #    source-path: ${{ inputs.addressses }}
+      #    s3-bucket-filename: '${{ inputs.frontend-environment }}'
+      #    s3-bucket-path: ${{ inputs.project }}/addresses/${{ inputs.chain-environment }}
+      #    s3-bucket-name: ${{ secrets.CONTRACTS_S3BUCKET_NAME }}

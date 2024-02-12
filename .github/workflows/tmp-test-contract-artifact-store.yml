@@ -34,8 +34,9 @@ jobs:
           path: |
             art2-1.txt
             art2-2.txt
-  test:
+  test1:
     name: Test sub-workflow
+    needs: [artifacts]
     uses: ./.github/workflows/_contract-artifact-store.yml
     secrets: inherit
     with:
@@ -55,6 +56,19 @@ jobs:
             }
           ]
         }
+      checkout: true
+      checkout-ref: ''
+      download-artifacts: artifacts*
+  test2:
+    name: Test sub-workflow
+    needs: [test1]
+    uses: ./.github/workflows/_contract-addresses-store.yml
+    secrets: inherit
+    with:
+      project: 'most'
+      chain-environment: 'bridgenet'
+      frontend-environment: 'dev'
+      addresses: some/path/addresses.json
       checkout: true
       checkout-ref: ''
       download-artifacts: artifacts*
