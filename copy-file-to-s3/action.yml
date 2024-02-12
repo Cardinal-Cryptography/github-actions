@@ -22,12 +22,25 @@ inputs:
     description: Set to 'true' to compress file into a .tar.gz archive
     required: false
     default: 'true'
+  if-exist:
+    description: Action to be taken when destination file already exists, one of 'skip', 'overwrite' or 'fallback'
+    required: false
+    default: 'skip'
 runs:
   using: composite
   steps:
     - name: Copy file to S3 AWS bucket
       shell: bash
       run: |
+        if [[
+          '${{ inputs.if-exist }}' != 'skip' && \
+          '${{ inputs.if-exist }}' != 'overwrite' && \
+          '${{ inputs.if-exist }}' != 'fallback'
+        ]]; then
+          echo "!!! Invalid value for 'if-exist' argument, should be one of 'skip', 'overwrite' or 'fallback'"
+          exit 1
+        fi
+
         if [[
           '${{ inputs.compression }}' == 'true' && \
           '${{ inputs.source-filename }}' == '${{ inputs.s3-bucket-filename }}'
@@ -70,17 +83,29 @@ runs:
           --bucket '${{ inputs.s3-bucket-name }}' \
           --key '${{ inputs.s3-bucket-path }}/${{ inputs.s3-bucket-filename }}' \
           2> /dev/null || not_exist=true
-        if [[ "${not_exist}" ]]; then
-          target_s3_filepath='${{ inputs.s3-bucket-path }}/${{ inputs.s3-bucket-filename }}'
-          if [[ '${{ inputs.compression}}' == 'true' ]]; then
-            tar -cvzf '${{ inputs.s3-bucket-filename }}' -C '${{ inputs.source-path }}' \
-              '${{ inputs.source-filename }}'
-            aws s3 cp '${{ inputs.s3-bucket-filename }}' \
-              s3://${{ inputs.s3-bucket-name }}/"${target_s3_filepath}"
-          else
-            aws s3 cp '${{ inputs.source-path }}' \
-              s3://${{ inputs.s3-bucket-name }}/"${target_s3_filepath}"
+
+        if [[ "${not_exist}" != 'true' ]]; then
+          echo '! File ${{ inputs.s3-bucket-filename }} already exists on S3 bucket.'
+
+          if [[ '${{ inputs.if-exist }}' == 'fallback' ]]; then
+            echo '! Failing.'
+            exit 1
           fi
+          if [[ '${{ inputs.if-exist }}' == 'skip' ]]; then
+            echo '! Skipping overwrite.'
+            exit 0
+          fi
+
+          echo '! Overwriting.'
+        fi
+
+        target_s3_filepath='${{ inputs.s3-bucket-path }}/${{ inputs.s3-bucket-filename }}'
+        if [[ '${{ inputs.compression}}' == 'true' ]]; then
+          tar -cvzf '${{ inputs.s3-bucket-filename }}' -C '${{ inputs.source-path }}' \
+            '${{ inputs.source-filename }}'
+          aws s3 cp '${{ inputs.s3-bucket-filename }}' \
+            s3://${{ inputs.s3-bucket-name }}/"${target_s3_filepath}"
         else
-          echo 'File ${{ inputs.s3-bucket-filename }} already exists on S3 bucket.'
+          aws s3 cp '${{ inputs.source-path }}' \
+            s3://${{ inputs.s3-bucket-name }}/"${target_s3_filepath}"
         fi
