@@ -29,7 +29,7 @@ inputs:
   if-not-exist:
     description: Action to be taken when destination file does not exists, one of 'skip' or 'fallback' or 'try'
     required: false
-    default: 'try'
+    default: 'fallback'
 
 runs:
   using: "composite"
