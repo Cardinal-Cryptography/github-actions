@@ -78,6 +78,11 @@ runs:
           exit 1
         fi
 
+    - name: Create directory for downloaded files
+      shell: bash
+      run: |
+        mkdir -p ${{ inputs.dst-artifact }}
+
     - name: Download contract artifact from AWS S3 bucket
       uses: Cardinal-Cryptography/github-actions/get-file-from-s3@v6
       env:
