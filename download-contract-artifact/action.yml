@@ -89,3 +89,4 @@ runs:
         s3-bucket-path: ${{ inputs.project }}/artifacts/${{ inputs.version }}/${{ inputs.contract }}
         s3-bucket-name: ${{ inputs.s3-bucket }}
         if-not-exist: ${{ inputs.if-not-exist }}
+        recursive: 'true'
