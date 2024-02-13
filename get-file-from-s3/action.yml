@@ -16,6 +16,10 @@ inputs:
     description: Action to be taken when path does not exit on S3 bucket, one of 'skip' or 'fallback' (default) or 'try'
     required: false
     default: 'fallback'
+  recursive:
+    description: Adds --recursive flag
+    required: false
+    default: 'false'
 runs:
   using: composite
   steps:
@@ -58,4 +62,9 @@ runs:
           fi
         fi
 
-        aws s3 cp --recursive s3://${{ inputs.s3-bucket-name }}/${{ inputs.s3-bucket-path }} ${{ inputs.destination-path }}
+        recursive_flag=''
+        if [[ '${{ inputs.recursive }}' == 'true' ]]; then
+          recursive_flag='--recursive'
+        fi
+
+        aws s3 cp ${recursive_flag} s3://${{ inputs.s3-bucket-name }}/${{ inputs.s3-bucket-path }} ${{ inputs.destination-path }}

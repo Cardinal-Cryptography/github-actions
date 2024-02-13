@@ -29,7 +29,7 @@ inputs:
   if-not-exist:
     description: Action to be taken when destination file does not exists, one of 'skip' or 'fallback' or 'try'
     required: false
-    default: 'try'
+    default: 'fallback'
 
 runs:
   using: "composite"
@@ -89,3 +89,4 @@ runs:
         s3-bucket-path: ${{ inputs.project }}/addresses/${{ inputs.chain-environment }}/${{ inputs.frontend-environment }}.json
         s3-bucket-name: ${{ inputs.s3-bucket }}
         if-not-exist: ${{ inputs.if-not-exist }}
+        recursive: 'false'
