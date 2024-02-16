@@ -1,0 +1,122 @@
+---
+name: Test generate contract spec
+
+on:
+  pull_request:
+    branches:
+      - main
+      - A0-4070-add-generate-contract-spec
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  main:
+    name: Test replace-string action
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Create input dummy files
+        shell: bash
+        run: |
+          echo '{"contract1": "5A","contract2": "5B"}' > azero_addresses.json
+          echo '{"cont3": "5C","cont4": "5D"}' > eth_addresses.json
+
+      - name: Generate contract spec JSON file from files
+        uses: ./generate-contract-spec
+        with:
+          src-files: |-
+            azero_addresses.json|azero_
+            eth_addresses.json|eth_
+          dst-file: generated-from-files.json
+          exclude: |-
+            eth_cont3
+          spec-version: '0.1'
+          contract-version: 'v'
+
+      - name: Generate contract spec JSON file from string
+        uses: ./generate-contract-spec
+        with:
+          src-string: |-
+            azero_con1|5E
+            azero_con2|5F
+            azero_con3|5G
+          dst-file: generated-from-string.json
+          exclude: |-
+            azero_con2
+          spec-version: '0.1'
+          contract-version: 'v'
+
+      - name: Generate contract spec JSON file from files and string
+        uses: ./generate-contract-spec
+        with:
+          src-files: |-
+            azero_addresses.json|azero_
+            eth_addresses.json|eth_
+          src-string: |-
+            azero_con1|5E
+            azero_con2|5F
+            azero_con3|5G
+          dst-file: generated-from-files-and-string.json
+          exclude: |-
+            azero_con1
+            eth_cont4
+          spec-version: '0.1'
+          contract-version: 'v'
+
+      - name: Check created files
+        shell: bash
+        run: |
+          if [[ $(cat generated-from-files.json | jq -r '.version') != '0.1' ]]; then
+            echo "Invalid spec version";
+            exit 1;
+          fi
+
+          if [[ $(cat generated-from-files.json | jq -r '.contract_version') != 'v' ]]; then
+            echo "Invalid contract version";
+            exit 1;
+          fi
+
+          cat generated-from-files.json
+
+          if [[ \
+            $(cat generated-from-files.json | jq -r '.addresses.azero_contract1.address') != '5A' \
+            || $(cat generated-from-files.json | jq -r '.addresses.azero_contract2.address') != '5B' \
+            || $(cat generated-from-files.json | jq -rR 'fromjson? | .addresses.eth_cont3.address') != '' \
+            || $(cat generated-from-files.json | jq -r '.addresses.eth_cont4.address') != '5D'
+          ]]; then
+            echo "Invalid file generated";
+            exit 1;
+          fi
+
+          cat generated-from-string.json
+
+          if [[ \
+            $(cat generated-from-string.json | jq -r '.addresses.azero_con1.address') != '5E' \
+            || $(cat generated-from-string.json | jq -r '.addresses.azero_con3.address') != '5G' \
+            || $(cat generated-from-string.json | jq -rR 'fromjson? | .addresses.azero_con2.address') != ''
+          ]]; then
+            echo "Invalid file generated";
+            exit 1;
+          fi
+
+          cat generated-from-files-and-string.json
+
+          if [[ \
+            $(cat generated-from-files-and-string.json | jq -rR 'fromjson? | .addresses.azero_con1.address') != '' \
+            || $(cat generated-from-files-and-string.json | jq -r '.addresses.azero_con2.address') != '5F' \
+            || $(cat generated-from-files-and-string.json | jq -r '.addresses.azero_con3.address') != '5G' \
+            || $(cat generated-from-files-and-string.json | jq -r '.addresses.azero_contract1.address') != '5A' \
+            || $(cat generated-from-files-and-string.json | jq -r '.addresses.azero_contract2.address') != '5B' \
+            || $(cat generated-from-files-and-string.json | jq -r '.addresses.eth_cont3.address') != '5C' \
+            || $(cat generated-from-files-and-string.json | jq -rR 'fromjson? | .addresses.eth_cont4.address') != ''
+          ]]; then
+            echo "Invalid file generated";
+            exit 1;
+          fi
