@@ -5,7 +5,6 @@ on:
   pull_request:
     branches:
       - main
-      - A0-4070-add-generate-contract-spec
   push:
     branches:
       - main
