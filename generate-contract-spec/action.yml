@@ -1,0 +1,32 @@
+name: Generate contract spec
+description: Creates JSON file with contracts addresses etc.
+inputs:
+  src-files:
+    description: Multiline string where each line is in format of filename|contract_name_prefix
+    required: false
+    default: ''
+  src-string:
+    description: Multiline string where each line is in format of contract_name|address
+    required: false
+    default: ''
+  dst-file:
+    description: Output filename
+    required: false
+    default: ''
+  exclude:
+    description: Multiline string where each line contains contract_name to exclude
+    required: false
+    default: ''
+  spec-version:
+    description: Spec version
+    required: false
+    default: '0.1'
+  contract-version:
+    description: Contract version
+    required: true
+outputs:
+  json-minified:
+    description: Minified contract spec JSON
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
