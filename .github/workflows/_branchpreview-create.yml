@@ -20,6 +20,16 @@ on:
         description: "Choose from 'private' or 'public'"
         required: true
         type: string
+      post-frontend-url:
+        description: "Post frontend-url output to PR comments"
+        required: false
+        type: string
+        default: "false"
+      pull-request-number:
+        description: "Pull request number required when posting frontend-url"
+        required: false
+        type: string
+        default: ""
     outputs:
       base64:
         description: Outputs encoded with base64
@@ -54,3 +64,5 @@ jobs:
           git-commit-author: ${{ secrets.AUTOCOMMIT_AUTHOR }}
           git-commit-email: ${{ secrets.AUTOCOMMIT_EMAIL }}
           hard-refresh: 'true'
+          post-frontend-url: '${{ inputs.post-frontend-url }}'
+          pull-request-number: '${{ inputs.pull-request-number }}'
