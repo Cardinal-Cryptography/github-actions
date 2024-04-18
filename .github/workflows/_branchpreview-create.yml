@@ -50,7 +50,7 @@ jobs:
     steps:
       - name: Create branchpreview
         id: create-branchpreview
-        uses: Cardinal-Cryptography/github-actions/create-branchpreview@A0-4085-add-posting-frontend-url-when-branchpreview-is-created
+        uses: Cardinal-Cryptography/github-actions/create-branchpreview@v6
         with:
           repository-name: ${{ inputs.repository-name }}
           branch-name: ${{ inputs.branch-name }}
