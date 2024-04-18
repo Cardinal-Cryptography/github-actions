@@ -145,6 +145,7 @@ runs:
         inputs.post-frontend-url == 'true' &&
         inputs.repository-name != '' &&
         inputs.pull-request-number != ''
+      shell: bash
       env:
         CI_GH_TOKEN: ${{ inputs.gh-ci-token }}
       run: |
