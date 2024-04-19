@@ -75,7 +75,8 @@ runs:
       run: |
         components=$(echo ${{ env.COMPONENTS }} | tr -d '[]' | sed 's/,/ /g')
         for component in $components; do
-          rustup component add $component
+          rustup component add $component \
+          --toolchain ${{ steps.install-rust-toolchain.outputs.channel }}
         done
 
     - name: Add targets (optional)
