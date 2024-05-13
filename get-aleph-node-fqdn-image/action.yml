@@ -218,7 +218,7 @@ runs:
         chain_bootstrapper_fqdn_image='not-required'
         chain_bootstrapper_fqdn_image_latest='not-required'
         chain_bootstrapper_image_exists='true'
-        if [[ '${{ steps.steps.check-chain-bootstrapper-crate-existence.outputs.exists }}' == 'true' ]]; then
+        if [[ '${{ steps.check-chain-bootstrapper-crate-existence.outputs.exists }}' == 'true' ]]; then
           chain_bootstrapper_image_exists='${{ steps.check-chain-bootstrapper-image-exists.outputs.image-exists }}'
           chain_bootstrapper_fqdn_image='${{ steps.compose-chain-bootstrapper-fqdn-node-image.outputs.fqdn-image }}'
           chain_bootstrapper_fqdn_image_latest='${{ steps.compose-chain-bootstrapper-fqdn-node-image.outputs.fqdn-image-latest }}'
