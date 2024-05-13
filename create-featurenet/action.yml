@@ -153,7 +153,7 @@ runs:
           '${{ inputs.expiration }}' \
           '${{ inputs.sudo-account-id }}' \
           'not-used' \
-          '${{ inputs.featurenet-chain-bootstrapper-image }}'
+          '${{ inputs.featurenet-chain-bootstrapper-image }}' \
           ${{ inputs.internal == 'true' && '-i' || '' }} \
           -c -g | tee -a tmp-opssh-createfeaturenet-output.txt
 
