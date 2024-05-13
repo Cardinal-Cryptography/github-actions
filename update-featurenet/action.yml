@@ -82,7 +82,7 @@ runs:
         repository: Cardinal-Cryptography/${{ inputs.repo-featurenet-template-name }}
         token: ${{ inputs.gh-ci-token }}
         path: "${{ inputs.repo-featurenet-template-name }}"
-        ref: main
+        ref: A0-4268
 
     - name: Start featurenet
       id: start-featurenet
