@@ -103,6 +103,8 @@ runs:
           '${{ inputs.rolling-update-partition }}' \
           'not-used-because-update' \
           'not-used-because-update' \
+          'not-used-because-update' \
+          'not-used-because-update' \
           -u \
           -c -g | tee -a tmp-opssh-updatefeaturenet-output.txt
 

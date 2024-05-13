@@ -1,8 +1,7 @@
 ---
 name: Get aleph-node FQDN docker image for featurenets
 description:
-  This action compiles fully qualified aleph node domain name of aleph-node image. It is currently
-  used only in the context of featurenets.
+  This action compiles fully qualified aleph node domain name of aleph-node image. 
 
   This name depends on whether
     * it is test binary or production binary,
@@ -11,10 +10,17 @@ description:
   There's spacial logic when searching for a production binary that cannot be found in the
   production ECR repo - we assume it can be found as well in dev ECR repo, as long session
   aleph-node binaries not build from main or release branches are not release candidates
+  
+  Alongisde with aleph-node FQDN, this action outputs as well chain-bootstrapper FQDN that
+  was built from the same commit SHA as aleph-node.  
 
-  Convention of naming aleph-node images is as follows
-    * short session binaries are named aleph-node:<sha>-dev
-    * normal session binaries are named aleph-node:<sha>
+  Convention of naming aleph-node and chain-bootstrapper images is as follows
+    * aleph-node images are named
+      ** testing profile binaries aleph-node:<sha>-dev
+      ** production profile binaries aleph-node:<sha>
+    * chain-bootstrapper images are named
+      ** testing profile binaries chain-bootstrapper:<sha>-dev
+      ** production profile binaries chain-bootstrapper:<sha>
 inputs:
   ref:
     description: "aleph-node repo's git ref: hash, branch, tag - or 'mainnet' or 'testnet'"
@@ -28,16 +34,35 @@ inputs:
   ecr-prod-node-repo:
     description: 'URL and name of aleph-node prod ECR repo'
     required: true
+  ecr-chain-bootstrapper-repo:
+    description: 'URL and name of chain-bootstrapper ECR repo'
+    required: true
+  only-aleph-nope-production-repo:
+    description: "Set to true to use only ECR aleph-node production repo"
+    required: false
+    default: 'true'
 outputs:
   fqdn-image:
     description: 'FQDN path to aleph-node ECR docker image.'
     value: ${{ steps.combine-action-outputs.outputs.fqdn-image }}
+  fqdn-image-latest:
+    description: 'FQDN path to aleph-node ECR docker latest image.'
+    value: ${{ steps.combine-action-outputs.outputs.fqdn-image-latest }}
+  chain-bootstrapper-fqdn-image:
+    description: 'FQDN path to chain-bootstrapper ECR docker image.'
+    value: ${{ steps.combine-action-outputs.outputs.chain-bootstrapper-fqdn-image }}
+  chain-bootstrapper-fqdn-image-latest:
+    description: 'FQDN path to chain-bootstrapper ECR docker latest image.'
+    value: ${{ steps.combine-action-outputs.outputs.chain-bootstrapper-fqdn-image-latest }}
   ref:
     description: 'An aleph-node git ref to build image from.'
     value: ${{ steps.combine-action-outputs.outputs.ref }}
   image-exists:
-    description: 'True if aleph-node image does not exist on ECR '
+    description: 'true if aleph-node image does not exist on ECR, otherwise false'
     value: ${{ steps.combine-action-outputs.outputs.image-exists }}
+  chain-bootstrapper-image-exists:
+    description: 'true if chain-bootstrapper image does not exist on ECR, otherwise false'
+    value: ${{ steps.combine-action-outputs.outputs.chain-bootstrapper-image-exists }}
 runs:
   using: composite
   steps:
@@ -58,6 +83,10 @@ runs:
         fi
         if [[ -z '${{ inputs.ecr-prod-node-repo }}' ]]; then
           echo "!!! ecr-prod-node-repo is empty"
+          exit 1
+        fi
+        if [[ -z '${{ inputs.ecr-chain-bootstrapper-repo }}' ]]; then
+          echo "!!! ecr-chain-bootstrapper-repo is empty"
           exit 1
         fi
 
@@ -99,6 +128,8 @@ runs:
       run: |
         fqdn_image='${{ env.ECR_REPO }}:${{ env.SHA }}${{ env.TAG_SUFFIX }}'
         echo "fqdn-image=${fqdn_image}" >> $GITHUB_OUTPUT
+        fqdn_image_latest='${{ env.ECR_REPO }}:latest'
+        echo "fqdn-image-latest=${fqdn_image_latest}" >> $GITHUB_OUTPUT
         ref='${{ env.FULL_SHA }}'
         echo "ref=${ref}" >> $GITHUB_OUTPUT
 
@@ -114,6 +145,7 @@ runs:
       id: compose-fqdn-prod-node-image-in-dev-repo
       if: ${{ steps.check-fqdn-docker-image-existence.outputs.image-exists == 'false' &&
               inputs.test-binary == 'false' &&
+              inputs.only-aleph-nope-production-repo != 'true' &&
               inputs.ref != 'mainnet' && inputs.ref != 'testnet' }}
       env:
         ECR_REPO: ${{ inputs.ecr-dev-node-repo }}
@@ -132,6 +164,42 @@ runs:
         ecr-image: ${{ steps.compose-fqdn-prod-node-image-in-dev-repo.outputs.fqdn-image }}
         exit-when-image-not-exists: 'false'
 
+    - name: Check if chain-bootstrapper crate exists
+      id: check-chain-bootstrapper-crate-existence
+      shell: bash
+      run: |
+        if cargo metadata | jq -e '.packages[] | select(.name=="chain-bootstrapper")' > /dev/null; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Compose chain-bootstrapper fqdn docker image
+      id: compose-chain-bootstrapper-fqdn-node-image
+      if: ${{ steps.check-chain-bootstrapper-crate-existence.outputs.exists == 'true' }}
+      env:
+        ECR_REPO: ${{ inputs.ecr-chain-bootstrapper-repo }}
+        TAG_SUFFIX: ${{ inputs.test-binary == 'true' &&
+          '-dev' ||
+          '' }}
+        SHA: ${{ (inputs.ref == 'mainnet' || inputs.ref == 'testnet') &&
+          steps.get-node-commit-sha-from-net.outputs.sha ||
+          steps.get-node-commit-sha-from-ref.outputs.sha }}
+      shell: bash
+      run: |
+        fqdn_image='${{ env.ECR_REPO }}:${{ env.SHA }}${{ env.TAG_SUFFIX }}'
+        echo "fqdn-image=${fqdn_image}" >> $GITHUB_OUTPUT
+        fqdn_image_latest='${{ env.ECR_REPO }}:latest'
+        echo "fqdn-image-latest=${fqdn_image_latest}" >> $GITHUB_OUTPUT
+
+    - name: Check chain-bootstrapper fqdn docker image in ECR repo existence
+      id: check-chain-bootstrapper-image-exists
+      if: ${{ steps.check-chain-bootstrapper-crate-existence.outputs.exists == 'true' }}
+      uses: Cardinal-Cryptography/github-actions/check-image-existence-ecr@v6
+      with:
+        ecr-image: ${{ steps.compose-chain-bootstrapper-fqdn-node-image.outputs.fqdn-image }}
+        exit-when-image-not-exists: 'false'
+
     - name: Combine action outputs
       id: combine-action-outputs
       shell: bash
@@ -141,14 +209,26 @@ runs:
         if [[ '${{ steps.compose-fqdn-prod-node-image-in-dev-repo.outputs.fqdn-image }}' != '' ]]; then
           fqdn_image='${{ steps.compose-fqdn-prod-node-image-in-dev-repo.outputs.fqdn-image }}'
         fi
+        fqdn_image_latest='${{ steps.compose-fqdn-node-image.outputs.fqdn-image-latest }}'
         ref='${{ steps.compose-fqdn-node-image.outputs.ref }}'
         image_exists='${{ steps.check-fqdn-docker-image-existence.outputs.image-exists }}'
         if [[ '${{ steps.check-fqdn-prod-node-image-in-dev-repo.outputs.image-exists }}' != '' ]]; then
           image_exists='${{ steps.check-fqdn-prod-node-image-in-dev-repo.outputs.image-exists }}'
         fi
+        chain_bootstrapper_fqdn_image='not-required'
+        chain_bootstrapper_fqdn_image_latest='not-required'
+        chain_bootstrapper_image_exists='true'
+        if [[ '${{ steps.steps.check-chain-bootstrapper-crate-existence.outputs.exists }}' == 'true' ]]; then
+          chain_bootstrapper_image_exists='${{ steps.check-chain-bootstrapper-image-exists.outputs.image-exists }}'
+          chain_bootstrapper_fqdn_image='${{ steps.compose-chain-bootstrapper-fqdn-node-image.outputs.fqdn-image }}'
+          chain_bootstrapper_fqdn_image_latest='${{ steps.compose-chain-bootstrapper-fqdn-node-image.outputs.fqdn-image-latest }}'
+        fi
+        
         echo "fqdn-image=${fqdn_image}" >> $GITHUB_OUTPUT
+        echo "fqdn-image-latest=${fqdn_image_latest}" >> $GITHUB_OUTPUT
         echo "ref=${ref}" >> $GITHUB_OUTPUT
         echo "image-exists=${image_exists}" >> $GITHUB_OUTPUT
+        echo "chain-bootstrapper-image-exists=${chain_bootstrapper_image_exists}" >> $GITHUB_OUTPUT
+        echo "chain-bootstrapper-fqdn-image=${chain_bootstrapper_fqdn_image}" >> $GITHUB_OUTPUT
+        echo "chain-bootstrapper-fqdn-image-latest=${chain_bootstrapper_fqdn_image_latest}" >> $GITHUB_OUTPUT
       # yamllint enable rule:line-length
-
-
