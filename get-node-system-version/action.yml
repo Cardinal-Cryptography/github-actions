@@ -25,12 +25,6 @@ runs:
           exit 1
         fi
 
-    - name: Checkout aleph-node repo with full depth
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        repository: Cardinal-Cryptography/aleph-node
-
     - name: Query RPC system.version
       id: rpc-system-version
       shell: bash

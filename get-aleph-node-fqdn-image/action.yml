@@ -97,6 +97,13 @@ runs:
       with:
         env: ${{ inputs.ref }}
 
+    - name: Checkout aleph-node from net ref
+      if: ${{ inputs.ref == 'mainnet' || inputs.ref == 'testnet' }}
+      uses: actions/checkout@v4
+      with:
+        repository: Cardinal-Cryptography/aleph-node
+        ref: ${{ steps.get-node-commit-sha-from-net.outputs.sha }}
+
     - name: Checkout aleph-node from input ref
       if: ${{ inputs.ref != 'mainnet' && inputs.ref != 'testnet' }}
       uses: actions/checkout@v4
