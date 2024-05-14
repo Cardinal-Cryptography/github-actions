@@ -72,7 +72,7 @@ jobs:
             echo "!!! Invalid aleph-node image"
             exit 1
           fi
-          if [[ ! '${{ inputs.chain-bootstrapper-image }}' =~ ^[a-z0-9][a-z0-9\._:/\-]{1,52}$ ]]; then
+          if [[ ! '${{ inputs.chain-bootstrapper-image }}' =~ ^[a-z0-9][a-z0-9\._:/\-]{1,56}$ ]]; then
             echo "!!! Invalid chain-bootstrapper image"
             exit 1
           fi
