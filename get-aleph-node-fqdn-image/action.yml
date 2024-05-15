@@ -175,7 +175,7 @@ runs:
       id: check-chain-bootstrapper-crate-existence
       shell: bash
       run: |
-        if cargo metadata --offline | jq -e '.packages[] | select(.name=="chain-bootstrapper")' > /dev/null; then
+        if cargo metadata | jq -e '.packages[] | select(.name=="chain-bootstrapper")' > /dev/null; then
           echo "exists=true" >> $GITHUB_OUTPUT
         else
           echo "exists=false" >> $GITHUB_OUTPUT
