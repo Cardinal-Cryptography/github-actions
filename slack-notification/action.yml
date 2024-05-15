@@ -22,7 +22,7 @@ runs:
   using: 'composite'
   steps:
     - name: Get workflow conclusion
-      uses: technote-space/workflow-conclusion-action@v3
+      uses: Cardinal-Cryptography/workflow-conclusion-action@v3
 
     - name: Export envs
       shell: bash
