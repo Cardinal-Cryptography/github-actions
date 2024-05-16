@@ -149,7 +149,7 @@ runs:
           '${{ inputs.expiration }}' \
           '${{ inputs.sudo-account-id }}' \
            custom-fnets-repo-not-used \
-          '${{ inputs.finality-version }}'
+          '${{ inputs.finality-version }}' \
           ${{ inputs.internal == 'true' && '-i' || '' }} \
           -c -g | tee -a tmp-opssh-createfeaturenet-output.txt
 
