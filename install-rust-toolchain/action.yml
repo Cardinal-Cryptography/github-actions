@@ -35,21 +35,21 @@ runs:
 
     - name: Read channel from rust-toolchain.toml
       id: toolchain-channel
-      uses: SebRollen/toml-action@v1.0.2
+      uses: SebRollen/toml-action@v1.2.0
       with:
         file: 'rust-toolchain.toml'
         field: 'toolchain.channel'
 
     - name: Read components from rust-toolchain.toml
       id: toolchain-components
-      uses: SebRollen/toml-action@v1.0.2
+      uses: SebRollen/toml-action@v1.2.0
       with:
         file: 'rust-toolchain.toml'
         field: 'toolchain.components'
 
     - name: Read targets from rust-toolchain.toml
       id: toolchain-targets
-      uses: SebRollen/toml-action@v1.0.2
+      uses: SebRollen/toml-action@v1.2.0
       with:
         file: 'rust-toolchain.toml'
         field: 'toolchain.targets'
