@@ -17,4 +17,4 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: VALIDATE | Execute github-actions-validator
-        uses: Cardinal-Cryptography/github-actions/yaml-validate@v3
+        uses: Cardinal-Cryptography/github-actions/yaml-validate@v6
