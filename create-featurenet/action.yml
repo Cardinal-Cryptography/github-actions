@@ -59,6 +59,9 @@ inputs:
     description: 'Sudo account ID'
     required: false
     default: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
+  finality-version:
+    description: 'Finality version to start FE with. Must be a cardinal number'
+    required: false
 outputs:
   ws-hostname:
     description: Hostname of the WS endpoint
@@ -113,6 +116,10 @@ runs:
           echo "!!! Invalid sudo-account-id"
           exit 1
         fi
+        if [[ ! '${{ inputs.finality-version }}' =~ ^[0-9]+$ ]]; then
+          echo "!!! finality-version must be a cardinal number
+          exit 1
+        fi
 
     - name: Checkout featurenet template repo
       uses: actions/checkout@v4
@@ -141,6 +148,8 @@ runs:
           '${{ inputs.rolling-update-partition }}' \
           '${{ inputs.expiration }}' \
           '${{ inputs.sudo-account-id }}' \
+           custom-fnets-repo-not-used \
+          '${{ inputs.finality-version }}'
           ${{ inputs.internal == 'true' && '-i' || '' }} \
           -c -g | tee -a tmp-opssh-createfeaturenet-output.txt
 
