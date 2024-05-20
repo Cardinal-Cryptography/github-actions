@@ -101,7 +101,7 @@ jobs:
 
       - name: Delete old featurenet app and data
         if: ${{ inputs.delete-first == true }}
-        uses: Cardinal-Cryptography/github-actions/delete-featurenet@v6
+        uses: Cardinal-Cryptography/github-actions/delete-featurenet@v7
         with:
           gh-ci-user: ${{ secrets.CI_GH_USER }}
           gh-ci-token: ${{ secrets.CI_GH_TOKEN }}
@@ -124,7 +124,7 @@ jobs:
           debug: true
 
       - name: Create featurenet with image tag
-        uses: Cardinal-Cryptography/github-actions/create-featurenet@A0-4268
+        uses: Cardinal-Cryptography/github-actions/create-featurenet@v7
         id: create-featurenet
         with:
           gh-ci-user: ${{ secrets.CI_GH_USER }}
