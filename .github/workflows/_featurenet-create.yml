@@ -12,6 +12,10 @@ on:
         description: "FQDN of aleph-node image"
         required: true
         type: string
+      chain-bootstrapper-image:
+        description: "FQDN of chain-bootstrapper image"
+        required: true
+        type: string
       expiration:
         description: 'Time after which featurenet will be removed: "Xh" or "never"'
         required: false
@@ -68,6 +72,10 @@ jobs:
             echo "!!! Invalid aleph-node image"
             exit 1
           fi
+          if [[ ! '${{ inputs.chain-bootstrapper-image }}' =~ ^[a-z0-9][a-z0-9\._:/\-]{1,56}$ ]]; then
+            echo "!!! Invalid chain-bootstrapper image"
+            exit 1
+          fi
           if [[ ! '${{ inputs.sudo-account-id }}' =~ ^[a-zA-Z0-9]{48}$ ]]; then
             echo "!!! Invalid sudo-account-id"
             exit 1
@@ -93,7 +101,7 @@ jobs:
 
       - name: Delete old featurenet app and data
         if: ${{ inputs.delete-first == true }}
-        uses: Cardinal-Cryptography/github-actions/delete-featurenet@v6
+        uses: Cardinal-Cryptography/github-actions/delete-featurenet@v7
         with:
           gh-ci-user: ${{ secrets.CI_GH_USER }}
           gh-ci-token: ${{ secrets.CI_GH_TOKEN }}
@@ -116,7 +124,7 @@ jobs:
           debug: true
 
       - name: Create featurenet with image tag
-        uses: Cardinal-Cryptography/github-actions/create-featurenet@v6
+        uses: Cardinal-Cryptography/github-actions/create-featurenet@v7
         id: create-featurenet
         with:
           gh-ci-user: ${{ secrets.CI_GH_USER }}
@@ -125,6 +133,7 @@ jobs:
           repo-featurenet-template-name: ${{ secrets.REPO_FEATURENET_TEMPLATE_NAME }}
           featurenet-name: ${{ inputs.featurenet-name }}
           featurenet-aleph-node-image: ${{ inputs.aleph-node-image }}
+          featurenet-chain-bootstrapper-image: ${{ inputs.chain-bootstrapper-image }}
           expiration: ${{ inputs.expiration }}
           validators: ${{ inputs.validators }}
           internal: ${{ inputs.internal && 'true' || 'false' }}
