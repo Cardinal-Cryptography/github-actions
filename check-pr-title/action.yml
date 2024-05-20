@@ -1,12 +1,14 @@
 ---
 name: Check Pull Request title
 description:
-  Checks if PR has number of Jira ticket at very beginning of its title in proper format
+  Checks if PR matches given regexp
 
 inputs:
   pr-title:
     description: "The title of Pull Request"
-    type: string
+    required: true
+  regexp:
+    description: "Regexp to check"
     required: true
 
 runs:
@@ -16,21 +18,11 @@ runs:
       shell: bash
       env:
         PR_TITLE: ${{ inputs.pr-title }}
+        REGEXP: ${{ inputs.regexp }}
       run: |
-        #!/bin/bash
-        if [[ -n '${{ env.PR_TITLE }}' ]]; then
-          if ! echo '${{ env.PR_TITLE }}' | grep -Eq "^A0-[0-9]+: .*$"; then
-            echo -e "The PR title is wrong \n \
-            Please follow this pattern:\nA0-[ticket-number]: Short description\n\
-            Example: \"A0-1337: Add h4x0r l33t code\""
-            exit 1
-          fi
-          if echo '${{ env.PR_TITLE }}' | grep -Eq "^A0-0000.*$"; then
-            echo "A0-0000 ticket number cannot be used in the PR title"
-            exit 1
-          fi
-        else
-          echo "PR_TITLE is empty"
+        if ! echo '${{ env.PR_TITLE }}' | grep -Eq '${{ env.REGEXP }}'; then
+          echo -e "The PR title \
+              '${{ env.PR_TITLE }}' \
+               does not match regexp '${{ env.REGEXP }}'"
           exit 1
         fi
-
