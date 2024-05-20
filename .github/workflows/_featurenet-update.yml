@@ -63,7 +63,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Start featurenet Deployment
-        uses: bobheadxi/deployments@v1.1.0
+        uses: bobheadxi/deployments@v1
         id: deployment
         with:
           step: start
