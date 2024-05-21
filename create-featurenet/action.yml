@@ -160,9 +160,9 @@ runs:
           '${{ inputs.expiration }}' \
           '${{ inputs.sudo-account-id }}' \
           '${{ inputs.featurenet-chain-bootstrapper-image }}' \
-          '${{ inputs.finality-version }}' \          
-          ${{ inputs.internal == 'true' && '-i' || '' }} \
-          -c -g | tee -a tmp-opssh-createfeaturenet-output.txt
+          '${{ inputs.finality-version }}' \
+           ${{ inputs.internal == 'true' && '-i' || '' }} \
+           -c -g | tee -a tmp-opssh-createfeaturenet-output.txt
 
         ws_hostname=$(cat tmp-opssh-createfeaturenet-output.txt | grep '^__output:ws-hostname:' | cut -d: -f3)
         echo "ws-hostname=${ws_hostname}" >> $GITHUB_OUTPUT
