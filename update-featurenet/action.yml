@@ -82,7 +82,7 @@ runs:
         repository: Cardinal-Cryptography/${{ inputs.repo-featurenet-template-name }}
         token: ${{ inputs.gh-ci-token }}
         path: "${{ inputs.repo-featurenet-template-name }}"
-        ref: main
+        ref: A0-4278
 
     - name: Start featurenet
       id: start-featurenet
@@ -99,12 +99,12 @@ runs:
         ./upsert-featurenet.sh \
           '${{ inputs.featurenet-name }}' \
           '${{ inputs.featurenet-aleph-node-image }}' \
-          'not-used-because-update' \
+          'replicas-not-used-because-update' \
           '${{ inputs.rolling-update-partition }}' \
-          'not-used-because-update' \
-          'not-used-because-update' \
-          'not-used-because-update' \
-          'not-used-because-update' \
+          'expiration-not-used-because-update' \
+          'sudo-not-used-because-update' \
+          'chain-bootstrapper-not-used-because-update' \
+          'finality-version-not-used-because-update' \
           -u \
           -c -g | tee -a tmp-opssh-updatefeaturenet-output.txt
 
