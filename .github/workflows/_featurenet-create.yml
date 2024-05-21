@@ -51,7 +51,7 @@ on:
         default: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
       finality-version:
         description: 'Finality version to start FE with. Must be a cardinal number'
-        type: number
+        type: string
         required: false
     outputs:
       ws-hostname:
