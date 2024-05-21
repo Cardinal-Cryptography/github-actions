@@ -73,7 +73,7 @@ jobs:
           debug: true
 
       - name: Update featurenet with image tag
-        uses: Cardinal-Cryptography/github-actions/update-featurenet@A0-4278
+        uses: Cardinal-Cryptography/github-actions/update-featurenet@v7
         id: create-featurenet
         with:
           gh-ci-user: ${{ secrets.CI_GH_USER }}
