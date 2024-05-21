@@ -49,6 +49,10 @@ on:
         type: string
         required: false
         default: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
+      finality-version:
+        description: 'Finality version to start FE with. Must be a cardinal number'
+        type: string
+        required: false
     outputs:
       ws-hostname:
         description: Hostname of the WS endpoint
@@ -142,6 +146,7 @@ jobs:
           git-commit-email: ${{ secrets.AUTOCOMMIT_EMAIL }}
           wait-for-finalized-heads: "true"
           sudo-account-id: ${{ inputs.sudo-account-id }}
+          finality-version: ${{ inputs.finality-version }}
 
       - name: Finish featurenet Deployment
         uses: bobheadxi/deployments@v1

@@ -222,8 +222,9 @@ runs:
         if [[ '${{ steps.check-fqdn-prod-node-image-in-dev-repo.outputs.image-exists }}' != '' ]]; then
           image_exists='${{ steps.check-fqdn-prod-node-image-in-dev-repo.outputs.image-exists }}'
         fi
-        chain_bootstrapper_fqdn_image='not-required'
-        chain_bootstrapper_fqdn_image_latest='not-required'
+        chain_bootstrapper_fqdn_image='does-not-exist-yet'
+        chain_bootstrapper_fqdn_image_latest='does-not-exist-yet'
+        # fallback is to not build boostrapper image when it was not part of the aleph-node repo yet
         chain_bootstrapper_image_exists='true'
         if [[ '${{ steps.check-chain-bootstrapper-crate-existence.outputs.exists }}' == 'true' ]]; then
           chain_bootstrapper_image_exists='${{ steps.check-chain-bootstrapper-image-exists.outputs.image-exists }}'
