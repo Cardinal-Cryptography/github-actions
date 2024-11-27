@@ -63,6 +63,8 @@ jobs:
           argo-sync-user-token: ${{ secrets.ARGO_SYNC_USER_TOKEN }}
           git-commit-author: ${{ secrets.AUTOCOMMIT_AUTHOR }}
           git-commit-email: ${{ secrets.AUTOCOMMIT_EMAIL }}
+          git-commit-gpg-key-b64: ${{ secrets.AUTOCOMMIT_GPG_KEY_B64 }}
+          git-commit-gpg-key-fingerprint: ${{ secrets.AUTOCOMMIT_GPG_KEY_FINGERPRINT }}
           hard-refresh: 'true'
           post-frontend-url: '${{ inputs.post-frontend-url }}'
           pull-request-number: '${{ inputs.pull-request-number }}'

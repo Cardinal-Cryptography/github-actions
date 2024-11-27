@@ -30,6 +30,12 @@ inputs:
   git-commit-email:
     description: 'Git commit email when pushing to branchpreviews repository'
     required: true
+  git-commit-gpg-key-b64:
+    description: base64 encoded signing key
+    required: true
+  git-commit-gpg-key-fingerprint:
+    description: fingerprint of gpg key
+    required: true
 
 runs:
   using: "composite"
@@ -78,6 +84,16 @@ runs:
         ./Ops.sh delete-branchpreview \
           '${{ inputs.repository-name }}' \
           '${{ inputs.branch-name }}'
+
+    - name: Configure signing key
+      shell: bash
+      # yamllint disable rule:line-length
+      run: |
+        echo ${{ inputs.git-commit-gpg-key-b64 }} | base64 -d > key.gpg
+        gpg --import key.gpg
+        rm key.gpg
+        git config --global user.signingkey $(echo ${{ inputs.git-commit-gpg-key-fingerprint }} | tail -c 17)
+      # yamllint enable rule:line-length
 
     - name: Commit deletion of the branchpreview
       uses: EndBug/add-and-commit@v9.1.1
