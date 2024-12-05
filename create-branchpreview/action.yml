@@ -29,6 +29,12 @@ inputs:
   git-commit-email:
     description: 'Git commit email when pushing to branchpreviews repository'
     required: true
+  git-commit-gpg-key-b64:
+    description: base64 encoded signing key
+    required: true
+  git-commit-gpg-key-fingerprint:
+    description: fingerprint of gpg key
+    required: true
   image:
     description: 'Full docker image in format of host/repo:tag'
     required: true
@@ -118,11 +124,22 @@ runs:
         echo "all-base64=${all_base64}" >> $GITHUB_OUTPUT
       # yamllint enable rule:line-length
 
+    - name: Configure signing key
+      shell: bash
+      # yamllint disable rule:line-length
+      run: |
+        echo ${{ inputs.git-commit-gpg-key-b64 }} | base64 -d > key.gpg
+        gpg --import key.gpg
+        rm key.gpg
+        git config --global user.signingkey $(echo ${{ inputs.git-commit-gpg-key-fingerprint }} | tail -c 17)
+      # yamllint enable rule:line-length
+
     - name: Commit branchpreview change
       uses: EndBug/add-and-commit@v9.1.1
       with:
         author_name: '${{ inputs.git-commit-author }}'
         author_email: '${{ inputs.git-commit-email }}'
+        commit: -S
         # yamllint disable-line rule:line-length
         message: 'Upsert ${{ inputs.repository-name }}:${{ inputs.branch-name }} with image tag: ${{ steps.start-branchpreview.outputs.image-tag }}'
         add: '["*.yaml","*.txt"]'
