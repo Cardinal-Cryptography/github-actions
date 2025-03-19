@@ -128,8 +128,10 @@ runs:
           exit 1
         fi
         if [[ '${{ inputs.finality-version }}' != "" && \
+              '${{ inputs.finality-version }}' != "legacy" && \
+              '${{ inputs.finality-version }}' != "current" && \
            ! '${{ inputs.finality-version }}' =~ ^[0-9]+$ ]]; then
-          echo "!!! finality-version must be a cardinal number"
+          echo "!!! finality-version must be a cardinal number or {current, never}"
           exit 1
         fi
 
