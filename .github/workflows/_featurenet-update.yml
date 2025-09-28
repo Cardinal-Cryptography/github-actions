@@ -60,7 +60,7 @@ jobs:
       ws-hostname: ${{ steps.create-featurenet.outputs.ws-hostname }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Start featurenet Deployment
         uses: bobheadxi/deployments@v1
